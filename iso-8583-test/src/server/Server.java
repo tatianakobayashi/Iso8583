@@ -8,6 +8,7 @@ public class Server {
 	private static final int PORT = 25000;
 	
 	private static int totalNumberOfAccepts = 0;
+	private static ServerStatistics serverStatistics = new ServerStatistics();
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
@@ -34,9 +35,10 @@ public class Server {
 			}
 			// Starting new client thread
 			System.out.println("New connection to " + socket.getInetAddress().getHostAddress());
-			new ServerThread(socket).start();
+			new ServerThread(socket, serverStatistics).start();
 			
-			System.out.println("Number of connections: " + totalNumberOfAccepts);
+			System.out.println("Número de conexões: " + totalNumberOfAccepts);
+			serverStatistics.printStatistics();
 		}
 	}
 }

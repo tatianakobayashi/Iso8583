@@ -12,10 +12,13 @@ import parser.Parser;
 public class ServerThread extends Thread {
 	protected Socket socket;
 	private Calendar c;
+	private ServerStatistics serverStatistics;
+	private int transactions = 0;
 
 	// Class builder
-	public ServerThread(Socket clientSocket) {
+	public ServerThread(Socket clientSocket, ServerStatistics serverStatistics) {
 		this.socket = clientSocket;
+		this.serverStatistics = serverStatistics;
 		c = Calendar.getInstance();
 	}
 
@@ -63,7 +66,7 @@ public class ServerThread extends Thread {
 					System.out.println("Close message received");
 					flag = false;
 				} else {
-
+					transactions++;
 					String responseCode = "00";
 
 					// Unpacks the message received from the client
@@ -116,5 +119,7 @@ public class ServerThread extends Thread {
 			System.out.println("Failed to close socket");
 			return;
 		}
+		
+		serverStatistics.putTransactionsByThread(getName(), transactions);
 	}
 }

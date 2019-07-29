@@ -21,6 +21,8 @@ public class Client {
 			Scanner keyboard = new Scanner(System.in);
 			boolean flag = true;
 			char reSend = 'n';
+			
+			String localFileAddress = "/home/tatiana/eclipse-workspace/iso-8583-test/src/";
 
 			// Creating output buffer
 			DataOutputStream outputToServer = new DataOutputStream(socket.getOutputStream());
@@ -29,7 +31,7 @@ public class Client {
 			// Instantiating parser
 			Parser isoParser = new Parser();
 			// Instantiating file reader
-			File file = new File("/home/tatiana/eclipse-workspace/iso-8583-test/src/" + testFile);
+			File file = new File(localFileAddress + testFile);
 			Scanner scanner = new Scanner(file);
 			// Reading from test file
 			String message = "";

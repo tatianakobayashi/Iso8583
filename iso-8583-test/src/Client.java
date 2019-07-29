@@ -2,6 +2,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Calendar;
 import java.util.Scanner;
 
 public class Client {
@@ -21,6 +22,9 @@ public class Client {
 			Scanner keyboard = new Scanner(System.in);
 			boolean flag = true;
 			char reSend = 'n';
+			
+			Calendar c = Calendar.getInstance();
+			String date = String.format("%02d%02d%02d%02d%02d", c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE),c.get(Calendar.SECOND));
 			
 			String localFileAddress = "/home/tatiana/eclipse-workspace/iso-8583-test/src/";
 

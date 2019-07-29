@@ -11,6 +11,7 @@ public class Request {
 		System.out.println("Dia: " + c.get(Calendar.DAY_OF_MONTH));
 		System.out.println("Horas: "  +  c.get(Calendar.HOUR_OF_DAY));
 		System.out.println("Minutos: "  + c.get(Calendar.MINUTE) );
-		System.out.println("Segundos" + c.get(Calendar.SECOND));
+		System.out.println("Segundos: " + c.get(Calendar.SECOND));
+		System.out.println(String.format("%02d%02d%02d%02d%02d", c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE),c.get(Calendar.SECOND)));
 	}
 }

@@ -5,13 +5,17 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Parser {
+	// HashMap with all of the possible fields in a Request/Response
 	private static final HashMap<Integer, DataElement> dataElements = new HashMap<Integer, DataElement>();
+	// The existing fields and values in the request
 	private HashMap<Integer, String> isoRequest;
 
+	// Class builder
 	public Parser() {
 		buildDataElementMap();
 	}
 	
+	// If the dataElements Hash Map is empty, fill it with the fields
 	private void buildDataElementMap() {
 		if(dataElements.isEmpty()) {
 			dataElements.put(1, new DataElement(1, 64, false, 0, "b"));
@@ -145,6 +149,7 @@ public class Parser {
 		}
 	}
 
+	// Sets the response code(39) and changes the MTI function to a Response 
 	public void setResponseCode(String responseCode) {
 		String mti = isoRequest.get(0);
 		int mti_int = Integer.parseInt(mti);
@@ -162,19 +167,23 @@ public class Parser {
 		isoRequest.put(39, responseCode);
 	}
 	
+	// Sets the date field (7) with a string with month, day, hour, minutes and seconds, 10 characters total. The String must already be formatted
 	public void setDate(String date) {
 		isoRequest.put(7, date);
 	}
 	
+	// Sets the STAN field(11)
 	public void setAuditNumber(int auditNumber) {
 		isoRequest.put(123, String.format("%06d", auditNumber));
 	}
 	
+	// Sets the 123rd field with a threadName
 	public void setThreadName(String threadName) {
 		isoRequest.put(123, threadName);
 	}
 
-	public HashMap<Integer, String> getisoRequestMap() {
+	// Returns a HashMap with all the dataFields from the request
+	public HashMap<Integer, String> getIsoRequestMap() {
 		return isoRequest;
 	}
 	
@@ -209,7 +218,8 @@ public class Parser {
 		// Returning packed Iso
 		return packedMsg;
 	}
-
+	
+	// Recreates an unformatted String from the isoRequest HashMap
 	public String repackIsoMsg() {
 		// This is the String to be returned
 		String packedMsg = "";
@@ -227,6 +237,7 @@ public class Parser {
 		return packedMsg;
 	}
 
+	// Creates one String with all of the fields values
 	private String packDataElements(List<Integer> fieldsList) {
 		String packedMsg = "";
 
@@ -250,6 +261,7 @@ public class Parser {
 		return packedMsg;
 	}
 
+	// Creates the bitmap
 	private String createBitmap(List<Integer> keysList) {
 		String bitMask = "";
 		Integer bitMaskSize = keysList.get(keysList.size() - 1);
@@ -289,6 +301,7 @@ public class Parser {
 		return bitMask;
 	}
 
+	// Creates a formatted String from an unformatted message String
 	public String unpackIsoMsg(String isoMsg) {
 		String formattedMsg = "{\n";
 		String quote = "\"";
@@ -329,6 +342,7 @@ public class Parser {
 		return formattedMsg + "\n}";
 	}
 
+	// Extracts the fields values from the message String
 	private void getDataElements(List<Integer> elementList, String unformattedMsg) {
 		isoRequest = new HashMap<Integer, String>();
 
@@ -360,6 +374,7 @@ public class Parser {
 		}
 	}
 
+	// Decodes the bitmap into the existing fields codes
 	private List<Integer> decodeBitmap(String bitmap, Integer firstPosition) {
 		List<Integer> elementList = new ArrayList<Integer>();
 

@@ -32,7 +32,7 @@ public class ServerThread extends Thread {
 		InputStream is = null;
 		Scanner scanner = null;
 		DataOutputStream output = null;
-		
+
 		// Tries to get input/output references
 		try {
 			is = socket.getInputStream();
@@ -42,18 +42,18 @@ public class ServerThread extends Thread {
 			System.out.println("Error when creating server I/O channels");
 			return;
 		}
-		
+
 		Parser parser = new Parser();
-		
+
 		String clientRequest;
 		String formattedMessage;
 		String serverResponse;
-		
+
 		boolean flag = true;
 
 		int auditNumber = 0;
 		int lastAuditNumber;
-		
+
 		while (flag) {
 			try {
 				clientRequest = scanner.nextLine();
@@ -73,9 +73,10 @@ public class ServerThread extends Thread {
 					formattedMessage = parser.unpackIsoMsg(clientRequest);
 
 					// Prints the message in the console
-					System.out.println("Client request:");
-					System.out.println(clientRequest);
-					System.out.println(formattedMessage);
+					System.out.println("Request received");
+//					System.out.println("Client request:");
+//					System.out.println(clientRequest);
+//					System.out.println(formattedMessage);
 
 					// Gets the STAN number
 					lastAuditNumber = auditNumber;
@@ -92,19 +93,22 @@ public class ServerThread extends Thread {
 					parser.setThreadName(this.getName());
 					parser.setAuditNumber(auditNumber + 1);
 
-					// Packs the response 
+					// Packs the response
 					serverResponse = parser.repackIsoMsg();
 
 					// Prints the response in the console
-					System.out.println("Server response:");
-					System.out.println(serverResponse);
+//					System.out.println("Server response:");
+//					System.out.println(serverResponse);
+					System.out.println("Sending response...");
 
 					// Adds line break to the end of the message
 					serverResponse += '\n';
-					
+
 					// Sends response to the client
 					output.writeBytes(serverResponse);
 					output.flush();
+
+					serverStatistics.putTransactionsByThread(getName(), transactions);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -119,7 +123,6 @@ public class ServerThread extends Thread {
 			System.out.println("Failed to close socket");
 			return;
 		}
-		
-		serverStatistics.putTransactionsByThread(getName(), transactions);
+
 	}
 }

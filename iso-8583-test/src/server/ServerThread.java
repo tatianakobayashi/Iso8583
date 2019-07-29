@@ -49,7 +49,7 @@ public class ServerThread extends Thread {
                 	System.out.println("Client request:");
                 	System.out.println(clientRequest);
                 	System.out.println("Server response:");
-                	parser.setResponseCode();
+                	parser.setResponseCode("00");
                 	serverResponse = parser.repackIsoMsg();
                 	System.out.println(serverResponse);
                 	serverResponse += '\n';

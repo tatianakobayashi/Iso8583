@@ -1,5 +1,6 @@
 package parser;
 
+
 public class DataElement {
 	private Integer code;
 	private Integer size;

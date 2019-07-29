@@ -6,11 +6,16 @@ import java.net.Socket;
 public class Server {
 
 	private static final int PORT = 25000;
+	
+	private static int totalNumberOfAccepts = 0;
+	private static ServerStatistics serverStatistics = new ServerStatistics();
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		ServerSocket serverSocket = null;
 		Socket socket = null;
+		
+		totalNumberOfAccepts = 0;
 		
 		try {
 			serverSocket = new ServerSocket(PORT);
@@ -24,12 +29,16 @@ public class Server {
 			// Accepting new clients
 			try {
 				socket = serverSocket.accept();
+				totalNumberOfAccepts++;
 			} catch(IOException e) {
 				System.out.println("error on accept: " + e);
 			}
 			// Starting new client thread
 			System.out.println("New connection to " + socket.getInetAddress().getHostAddress());
-			new ServerThread(socket).start();	
+			new ServerThread(socket, serverStatistics).start();
+			
+			System.out.println("Número de conexões: " + totalNumberOfAccepts);
+			serverStatistics.printStatistics();
 		}
 	}
 }

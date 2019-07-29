@@ -35,7 +35,7 @@ public class ClientTerminal extends Thread {
 			System.out.println("Terminal " + terminalName + ": " + "failed to build");
 			return;
 		}
-
+		parser = new Parser();
 		buildRequest(requestFile);
 
 	}
@@ -81,6 +81,7 @@ public class ClientTerminal extends Thread {
 	}
 
 	private void packRequest() {
+		System.out.println(this.request);
 		this.packedRequest = parser.packIsoMsg(this.request);
 		packedRequest += '\n';
 	}

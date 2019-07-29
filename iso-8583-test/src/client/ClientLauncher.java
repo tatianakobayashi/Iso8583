@@ -4,10 +4,10 @@ import java.util.Random;
 
 public class ClientLauncher {
 	public static void main(String args[]) {
-		int numberOfTerminals = 3000;
+		int numberOfTerminals = 100;
 		int requestsPerTerminal = 1000;
-		String serverIP = "";
-		final int PORT = 0;
+		String serverIP = "192.168.41.105";
+		final int PORT = 25000;
 		String[] requestsPath = new String[4];
 		Random random = new Random();
 		

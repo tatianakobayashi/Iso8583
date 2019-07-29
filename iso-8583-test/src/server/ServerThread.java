@@ -1,8 +1,11 @@
+package server;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.Scanner;
+
+import parser.Parser;
 
 public class ServerThread extends Thread {
 	protected Socket socket;

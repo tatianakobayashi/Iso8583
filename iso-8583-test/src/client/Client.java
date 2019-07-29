@@ -1,9 +1,12 @@
+package client;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Calendar;
 import java.util.Scanner;
+
+import parser.Parser;
 
 public class Client {
 

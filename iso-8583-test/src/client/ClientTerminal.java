@@ -62,6 +62,14 @@ public class ClientTerminal extends Thread {
 				e.printStackTrace();
 			}
 		}
+		try {
+			outputToServer.writeBytes("close");
+			outputToServer.flush();
+		} catch (IOException e) {
+			System.out.println("Não enviou close");
+			e.printStackTrace();
+			return;
+		}
 	}
 
 	private void buildRequest(String requestFile) {

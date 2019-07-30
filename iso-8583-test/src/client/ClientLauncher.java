@@ -4,8 +4,8 @@ import java.util.Random;
 
 public class ClientLauncher {
 	public static void main(String args[]) {
-		int numberOfTerminals = 100;
-		int requestsPerTerminal = 1000;
+		int numberOfTerminals = 1;
+		int requestsPerTerminal = 10;
 		String serverIP = "192.168.41.105";
 		final int PORT = 25000;
 		String[] requestsPath = new String[4];

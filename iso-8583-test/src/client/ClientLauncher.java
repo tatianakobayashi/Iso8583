@@ -14,7 +14,7 @@ public class ClientLauncher {
 		getRequestsPaths(requestsPath);
 		
 		for(int i = 0; i < numberOfTerminals; i ++) {
-			new ClientTerminal(serverIP, PORT, requestsPath[random.nextInt(3)], "Terminal " + i, requestsPerTerminal).start();
+			new ClientTerminal(serverIP, PORT, requestsPath[random.nextInt(3)], "Terminal" + i, requestsPerTerminal).start();
 		}
 	}
 	

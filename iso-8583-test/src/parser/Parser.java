@@ -1,4 +1,5 @@
 package parser;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,15 +10,17 @@ public class Parser {
 	private static final HashMap<Integer, DataElement> dataElements = new HashMap<Integer, DataElement>();
 	// The existing fields and values in the request
 	private HashMap<Integer, String> isoRequest;
+	//
+	ArrayList<Integer> keysList = new ArrayList<Integer>();
 
 	// Class builder
 	public Parser() {
 		buildDataElementMap();
 	}
-	
+
 	// If the dataElements Hash Map is empty, fill it with the fields
 	private void buildDataElementMap() {
-		if(dataElements.isEmpty()) {
+		if (dataElements.isEmpty()) {
 			dataElements.put(1, new DataElement(1, 64, false, 0, "b"));
 			dataElements.put(2, new DataElement(2, 19, true, 2, "n"));
 			dataElements.put(3, new DataElement(3, 6, false, 0, "n"));
@@ -149,7 +152,7 @@ public class Parser {
 		}
 	}
 
-	// Sets the response code(39) and changes the MTI function to a Response 
+	// Sets the response code(39) and changes the MTI function to a Response
 	public void setResponseCode(String responseCode) {
 		String mti = isoRequest.get(0);
 		int mti_int = Integer.parseInt(mti);
@@ -166,17 +169,18 @@ public class Parser {
 
 		isoRequest.put(39, responseCode);
 	}
-	
-	// Sets the date field (7) with a string with month, day, hour, minutes and seconds, 10 characters total. The String must already be formatted
+
+	// Sets the date field (7) with a string with month, day, hour, minutes and
+	// seconds, 10 characters total. The String must already be formatted
 	public void setDate(String date) {
 		isoRequest.put(7, date);
 	}
-	
+
 	// Sets the STAN field(11)
 	public void setAuditNumber(int auditNumber) {
 		isoRequest.put(123, String.format("%06d", auditNumber));
 	}
-	
+
 	// Sets the 123rd field with a threadName
 	public void setThreadName(String threadName) {
 		isoRequest.put(123, threadName);
@@ -186,21 +190,18 @@ public class Parser {
 	public HashMap<Integer, String> getIsoRequestMap() {
 		return isoRequest;
 	}
-	
+
 	// Creates a String from a formatted Iso message
-	public String packIsoMsg(String isoMsg) {
-		// This is the String to be returned
-		String packedMsg = "";
+	public void packIsoMsg(String isoMsg) {
 		// Splitting formatted Iso message
 		isoMsg = isoMsg.replace('"', ' ').replace('{', ' ').replace('}', ' ').trim();
-		
-//		System.out.println("isoMsg pack: " + isoMsg);
-		
+
+		// System.out.println("isoMsg pack: " + isoMsg);
+
 		String splittedMsg[] = isoMsg.split(",");
 		List<String> splittedMsgList = Arrays.asList(splittedMsg);
 		// Creating hashmap from splitted isoMsg
 		isoRequest = new HashMap<Integer, String>(splittedMsgList.size());
-		ArrayList<Integer> keysList = new ArrayList<Integer>();
 		for (String string : splittedMsgList) {
 			String splittedLine[] = string.split(":");
 			splittedLine[0] = splittedLine[0].trim();
@@ -209,16 +210,8 @@ public class Parser {
 			isoRequest.put(auxKey, splittedLine[1]);
 			keysList.add(auxKey);
 		}
-		// Appending MTI to our final string
-		packedMsg += isoRequest.get(keysList.get(0));
-		// Creating bitMap
-		packedMsg += createBitmap(keysList);
-		// Adding data elements
-		packedMsg += packDataElements(keysList);
-		// Returning packed Iso
-		return packedMsg;
 	}
-	
+
 	// Recreates an unformatted String from the isoRequest HashMap
 	public String repackIsoMsg() {
 		// This is the String to be returned
@@ -248,7 +241,7 @@ public class Parser {
 				// Variable size fields
 				String auxString = isoRequest.get(field);
 				int sizeOfField = auxString.length();
-				
+
 //				System.out.println("Element: " + field);
 //				System.out.println("packDataElements maxNumberOfDigits: "  +dataElements.get(field).getMaxNumberOfDigits() + " Length: " + sizeOfField);
 				packedMsg += String.format("%0" + dataElements.get(field).getMaxNumberOfDigits() + "d", sizeOfField);
@@ -272,7 +265,7 @@ public class Parser {
 		} else {
 			len = 64;
 		}
-		
+
 //		System.out.println(keysList);
 //		System.out.println("Length: " + len + " bitMaskSize: " + bitMaskSize);
 
@@ -307,7 +300,7 @@ public class Parser {
 		String quote = "\"";
 
 //		System.out.println("isoMsg: " + isoMsg);
-		
+
 		String mtiCode = isoMsg.substring(0, 4);
 //		 System.out.println(mtiCode);
 
@@ -327,9 +320,9 @@ public class Parser {
 		String hasAnotherLine = ",\n";
 
 		String elements = isoMsg.substring(lastPosition);
-		
+
 //		System.out.println("Elements: " + elements);
-		
+
 		getDataElements(elementList, elements);
 
 		for (Integer element : elementList) {
@@ -354,7 +347,7 @@ public class Parser {
 //			System.out.println(dataElement);
 			if (dataElement.getVariable()) {
 				// Variable size
-				
+
 //				System.out.println("maxNumber: " +  dataElement.getMaxNumberOfDigits());
 //				System.out.println(dataElement);
 //				System.out.println(unformattedMsg);
@@ -403,5 +396,17 @@ public class Parser {
 		}
 
 		return elementList;
+	}
+
+	public String concatMsg() {
+		String packedMsg = "";
+		// Appending MTI to our final string
+		packedMsg += isoRequest.get(keysList.get(0));
+		// Creating bitMap
+		packedMsg += createBitmap(keysList);
+		// Adding data elements
+		packedMsg += packDataElements(keysList);
+		// Returning packed Iso
+		return packedMsg;
 	}
 }

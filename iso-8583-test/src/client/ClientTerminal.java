@@ -44,14 +44,9 @@ public class ClientTerminal extends Thread {
 
 	public void run() {
 		for (int i = 0; i < maxRequests; i++) {
+			long start = System.currentTimeMillis();
 			// Parsing and packing iso request
-			
-			// Sets response fields
-			parser.setDate(getDateAndTime());
-			parser.setThreadName(this.getName());
-			parser.setAuditNumber(i);
-			
-			packRequest();
+			packRequest(i);
 			// Sending packed request to server
 			try {
 				this.outputToServer.writeBytes(packedRequest);
@@ -62,6 +57,8 @@ public class ClientTerminal extends Thread {
 			// Receiving response from server
 			response = inputFromServer.nextLine();
 			// Parsing server response
+			long end = System.currentTimeMillis();
+			System.out.println("It took " + (end - start) / 1000 + " seconds for this transaction - " + terminalName);
 			unpackedResponse = parser.unpackIsoMsg(response);
 			try {
 				// Thread sleeps 0 ~ 3 sec to simulate time between transactions 
@@ -73,6 +70,7 @@ public class ClientTerminal extends Thread {
 		try {
 			outputToServer.writeBytes("close");
 			outputToServer.flush();
+			System.out.println(terminalName + " closing");
 		} catch (IOException e) {
 			System.out.println("Não enviou close");
 			e.printStackTrace();
@@ -96,9 +94,13 @@ public class ClientTerminal extends Thread {
 		}
 	}
 
-	private void packRequest() {
-		System.out.println(this.request);
-		this.packedRequest = parser.packIsoMsg(this.request);
+	private void packRequest(int i) {
+		parser.packIsoMsg(this.request);
+		// Sets response fields
+		parser.setDate(getDateAndTime());
+		parser.setThreadName(this.getName());
+		parser.setAuditNumber(i);
+		this.packedRequest = parser.concatMsg();
 		packedRequest += '\n';
 	}
 	

@@ -6,8 +6,8 @@ import java.util.concurrent.Executors;
 
 public class ClientLauncher {
 	public static void main(String args[]) {
-		int numberOfTerminals = 1;
-		int requestsPerTerminal = 10;
+		int numberOfTerminals = 100;
+		int requestsPerTerminal = 15;
 		String serverIP = "192.168.41.105";
 		final int PORT = 25000;
 		String[] requestsPath = new String[4];

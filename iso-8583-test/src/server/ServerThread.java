@@ -131,7 +131,7 @@ public class ServerThread extends Thread {
 			}catch(NoSuchElementException e){
 				serverStatistics.putTransactionsByThread(getName(), transactions);
 				serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
-				serverStatistics.printStatistics();
+//				serverStatistics.printStatistics();
 			}catch (IOException e) {
 				e.printStackTrace();
 				scanner.close();

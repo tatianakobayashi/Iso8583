@@ -38,7 +38,7 @@ public class Server {
 			pool.execute(new ServerThread(socket, serverStatistics));
 			
 			serverStatistics.newConnection();
-//			serverStatistics.printStatistics();
+			serverStatistics.printStatistics();
 		}
 		//pool.shutdown();
 	}

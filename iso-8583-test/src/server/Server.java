@@ -22,6 +22,8 @@ public class Server {
 			return;
 		}
 		// Listening for new connections
+		
+		System.out.println("Available processors: " + Runtime.getRuntime().availableProcessors());
 		while (true) {
 			// Accepting new clients
 			try {
@@ -34,7 +36,7 @@ public class Server {
 			new ServerThread(socket, serverStatistics).start();
 			
 			serverStatistics.newConnection();
-			serverStatistics.printStatistics();
+//			serverStatistics.printStatistics();
 		}
 	}
 }

@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Calendar;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -21,11 +22,12 @@ public class ClientTerminal extends Thread {
 	private Scanner inputFromServer = null;
 	private String request = "", packedRequest = "", response = "", unpackedResponse = "";
 	private Random random = new Random();
+	private Calendar c;
 
 	public ClientTerminal(String serverIP, int port, String requestFile, String terminalName, int maxRequests) {
 		this.terminalName = terminalName;
 		this.maxRequests = maxRequests;
-
+		c = Calendar.getInstance();
 		try {
 			InetAddress address = InetAddress.getByName(serverIP);
 			socket = new Socket(address, port);
@@ -43,6 +45,12 @@ public class ClientTerminal extends Thread {
 	public void run() {
 		for (int i = 0; i < maxRequests; i++) {
 			// Parsing and packing iso request
+			
+			// Sets response fields
+			parser.setDate(getDateAndTime());
+			parser.setThreadName(this.getName());
+			parser.setAuditNumber(i);
+			
 			packRequest();
 			// Sending packed request to server
 			try {
@@ -93,5 +101,11 @@ public class ClientTerminal extends Thread {
 		this.packedRequest = parser.packIsoMsg(this.request);
 		packedRequest += '\n';
 	}
+	
+	// Returns the formatted date and time
+		private String getDateAndTime() {
+			return String.format("%02d%02d%02d%02d%02d", c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH),
+					c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND));
+		}
 
 }

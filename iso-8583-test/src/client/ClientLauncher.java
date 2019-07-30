@@ -1,6 +1,8 @@
 package client;
 
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientLauncher {
 	public static void main(String args[]) {
@@ -10,12 +12,14 @@ public class ClientLauncher {
 		final int PORT = 25000;
 		String[] requestsPath = new String[4];
 		Random random = new Random();
+		ExecutorService pool = Executors.newFixedThreadPool(numberOfTerminals);
 		
 		getRequestsPaths(requestsPath);
 		
 		for(int i = 0; i < numberOfTerminals; i ++) {
-			new ClientTerminal(serverIP, PORT, requestsPath[random.nextInt(3)], "Terminal" + i, requestsPerTerminal).start();
+			pool.execute(new ClientTerminal(serverIP, PORT, requestsPath[random.nextInt(3)], "Terminal" + i, requestsPerTerminal));
 		}
+		pool.shutdown();
 	}
 	
 	private static void getRequestsPaths(String[] requestsPath) {
@@ -25,3 +29,4 @@ public class ClientLauncher {
 		requestsPath[3] = "/home/cassio/git/Iso8583/iso-8583-test/src/testFiles/req_test_4";
 	}
 }
+

@@ -12,21 +12,14 @@ import parser.Parser;
 
 public class ServerThread extends Thread {
 	protected Socket socket;
-	private Calendar c;
 	private ServerStatistics serverStatistics;
 	private int transactions = 0;
 
-	// Class builder
+	// Constructor
 	public ServerThread(Socket clientSocket, ServerStatistics serverStatistics) {
 		this.socket = clientSocket;
 		this.serverStatistics = serverStatistics;
-		c = Calendar.getInstance();
-	}
-
-	// Returns the formatted date and time
-	private String getDateAndTime() {
-		return String.format("%02d%02d%02d%02d%02d", c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH),
-				c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND));
+		
 	}
 
 	public void run() {
@@ -105,12 +98,9 @@ public class ServerThread extends Thread {
 					if (auditNumber != 0 && lastAuditNumber != 0 && lastAuditNumber != auditNumber - 1) {
 						responseCode = "12";
 					}
-
+					
 					// Sets response fields
 					parser.setResponseCode(responseCode);
-					parser.setDate(getDateAndTime());
-					parser.setThreadName(this.getName());
-					parser.setAuditNumber(auditNumber + 1);
 
 					// Packs the response
 					long packingStart = System.currentTimeMillis();

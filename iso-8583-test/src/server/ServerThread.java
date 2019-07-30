@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.Calendar;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import parser.Parser;
@@ -29,6 +30,8 @@ public class ServerThread extends Thread {
 	}
 
 	public void run() {
+		long start = System.currentTimeMillis();
+		
 		InputStream is = null;
 		Scanner scanner = null;
 		DataOutputStream output = null;
@@ -53,10 +56,16 @@ public class ServerThread extends Thread {
 
 		int auditNumber = 0;
 		int lastAuditNumber;
-
+		
+		long waitingStart, processStart, waitingEnd, processEnd;
+		long totalWait = 0, totalProcess = 0;
 		while (flag) {
 			try {
+				waitingStart = System.currentTimeMillis();
 				clientRequest = scanner.nextLine();
+				waitingEnd = System.currentTimeMillis();
+				totalWait += waitingEnd - waitingStart;
+				processStart = System.currentTimeMillis();
 				if (clientRequest == null) {
 					socket.close();
 					System.out.println("null");
@@ -65,13 +74,23 @@ public class ServerThread extends Thread {
 				} else if (clientRequest.equals("close")) {
 					System.out.println("Close message received");
 					flag = false;
+					
+					serverStatistics.putTransactionsByThread(getName(), transactions);
+					serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
+					serverStatistics.printStatistics();
+					System.out.println("Total waiting time = " + totalWait);
+					System.out.println("Total processing time = " + totalProcess);
 				} else {
 					transactions++;
 					String responseCode = "00";
 
 					// Unpacks the message received from the client
+					long unpackStart = System.currentTimeMillis();
 					formattedMessage = parser.unpackIsoMsg(clientRequest);
-
+					long unpackFinish = System.currentTimeMillis();
+					
+					serverStatistics.newUnpackTime(unpackStart, unpackFinish);
+					
 					// Prints the message in the console
 					System.out.println("Request received");
 //					System.out.println("Client request:");
@@ -94,11 +113,18 @@ public class ServerThread extends Thread {
 					parser.setAuditNumber(auditNumber + 1);
 
 					// Packs the response
+					long packingStart = System.currentTimeMillis();
 					serverResponse = parser.repackIsoMsg();
+					long packingFinish = System.currentTimeMillis();
+					
+					serverStatistics.newPackTime(packingStart, packingFinish);
 
 					// Prints the response in the console
 //					System.out.println("Server response:");
 //					System.out.println(serverResponse);
+					processEnd = System.currentTimeMillis();
+					totalProcess += processEnd - processStart;
+					waitingStart = System.currentTimeMillis();
 					System.out.println("Sending response...");
 
 					// Adds line break to the end of the message
@@ -106,11 +132,17 @@ public class ServerThread extends Thread {
 
 					// Sends response to the client
 					output.writeBytes(serverResponse);
+					waitingEnd = System.currentTimeMillis();
+					totalWait += waitingEnd - waitingStart;
 					output.flush();
 
-					serverStatistics.putTransactionsByThread(getName(), transactions);
+					
 				}
-			} catch (IOException e) {
+			}catch(NoSuchElementException e){
+				serverStatistics.putTransactionsByThread(getName(), transactions);
+				serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
+				serverStatistics.printStatistics();
+			}catch (IOException e) {
 				e.printStackTrace();
 				scanner.close();
 				return;
@@ -123,6 +155,7 @@ public class ServerThread extends Thread {
 			System.out.println("Failed to close socket");
 			return;
 		}
+
 
 	}
 }

@@ -20,7 +20,7 @@ public class ClientTerminal extends Thread {
 	private Parser parser = null;
 	private DataOutputStream outputToServer = null;
 	private Scanner inputFromServer = null;
-	private String request = "", packedRequest = "", response = "", unpackedResponse = "";
+	private String request = "", packedRequest = "", response = "";//, unpackedResponse = "";
 	private Random random = new Random();
 	private Calendar c;
 
@@ -59,7 +59,8 @@ public class ClientTerminal extends Thread {
 			// Parsing server response
 			long end = System.currentTimeMillis();
 			System.out.println("It took " + (end - start) / 1000 + " seconds for this transaction - " + terminalName);
-			unpackedResponse = parser.unpackIsoMsg(response);
+			//unpackedResponse = parser.unpackIsoMsg(response);
+			parser.unpackIsoMsg(response);
 			try {
 				// Thread sleeps 0 ~ 3 sec to simulate time between transactions 
 				Thread.sleep(random.nextInt(3000));

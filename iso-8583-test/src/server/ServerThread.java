@@ -4,7 +4,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.util.Calendar;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -42,7 +41,7 @@ public class ServerThread extends Thread {
 		Parser parser = new Parser();
 
 		String clientRequest;
-		String formattedMessage;
+		// String formattedMessage;
 		String serverResponse;
 
 		boolean flag = true;
@@ -79,16 +78,17 @@ public class ServerThread extends Thread {
 
 					// Unpacks the message received from the client
 					long unpackStart = System.currentTimeMillis();
-					formattedMessage = parser.unpackIsoMsg(clientRequest);
+					// formattedMessage = parser.unpackIsoMsg(clientRequest);
+					parser.unpackIsoMsg(clientRequest);
 					long unpackFinish = System.currentTimeMillis();
 					
 					serverStatistics.newUnpackTime(unpackStart, unpackFinish);
 					
 					// Prints the message in the console
 					System.out.println("Request received");
-//					System.out.println("Client request:");
-//					System.out.println(clientRequest);
-//					System.out.println(formattedMessage);
+					// System.out.println("Client request:");
+					// System.out.println(clientRequest);
+					// System.out.println(formattedMessage);
 
 					// Gets the STAN number
 					lastAuditNumber = auditNumber;

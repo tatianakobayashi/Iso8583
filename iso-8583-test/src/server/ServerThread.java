@@ -18,12 +18,12 @@ public class ServerThread extends Thread {
 	public ServerThread(Socket clientSocket, ServerStatistics serverStatistics) {
 		this.socket = clientSocket;
 		this.serverStatistics = serverStatistics;
-		
+
 	}
 
 	public void run() {
 		long start = System.currentTimeMillis();
-		
+
 		InputStream is = null;
 		Scanner scanner = null;
 		DataOutputStream output = null;
@@ -48,7 +48,7 @@ public class ServerThread extends Thread {
 
 		int auditNumber = 0;
 		int lastAuditNumber;
-		
+
 		long waitingStart, processStart, waitingEnd, processEnd;
 		long totalWait = 0, totalProcess = 0;
 		while (flag) {
@@ -60,7 +60,7 @@ public class ServerThread extends Thread {
 				processStart = System.currentTimeMillis();
 				if (clientRequest == null) {
 					serverStatistics.closingConnection(getName());
-					
+
 					socket.close();
 					System.out.println("null");
 					scanner.close();
@@ -68,9 +68,9 @@ public class ServerThread extends Thread {
 				} else if (clientRequest.equals("close")) {
 					System.out.println("Close message received");
 					flag = false;
-					
+
 					serverStatistics.closingConnection(getName());
-					
+
 					serverStatistics.putTransactionsByThread(getName(), transactions);
 					serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
 					serverStatistics.printStatistics();
@@ -85,13 +85,13 @@ public class ServerThread extends Thread {
 //					 formattedMessage = parser.unpackIsoMsg(clientRequest);
 					parser.unpackIsoMsg(clientRequest);
 					long unpackFinish = System.currentTimeMillis();
-					
+
 					serverStatistics.newUnpackTime(unpackStart, unpackFinish);
-					
+
 					// Prints the message in the console
 					System.out.println("Request received");
-					 System.out.println("Client request:");
-					 System.out.println(clientRequest);
+					System.out.println("Client request:");
+					System.out.println(clientRequest);
 //					 System.out.println(formattedMessage);
 
 					// Gets the STAN number
@@ -102,7 +102,7 @@ public class ServerThread extends Thread {
 					if (auditNumber != 0 && lastAuditNumber != 0 && lastAuditNumber != auditNumber - 1) {
 						responseCode = "12";
 					}
-					
+
 					// Sets response fields
 					parser.setResponseCode(responseCode);
 
@@ -110,7 +110,7 @@ public class ServerThread extends Thread {
 					long packingStart = System.currentTimeMillis();
 					serverResponse = parser.repackIsoMsg();
 					long packingFinish = System.currentTimeMillis();
-					
+
 					serverStatistics.newPackTime(packingStart, packingFinish);
 
 					// Prints the response in the console
@@ -130,17 +130,27 @@ public class ServerThread extends Thread {
 					totalWait += waitingEnd - waitingStart;
 					output.flush();
 
-					
 				}
-			}catch(NoSuchElementException e){
+			} catch (NoSuchElementException e) {
 //				serverStatistics.closingConnection(getName());
-			
+
 				serverStatistics.putTransactionsByThread(getName(), transactions);
 				serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
 //				serverStatistics.printStatistics();
-			}catch (IOException e) {
-//				serverStatistics.closingConnection(getName());
 				
+				System.out.println("At thread " + getName());
+				e.printStackTrace();
+			} catch (IOException e) {
+//				serverStatistics.closingConnection(getName());
+
+				System.out.println("At thread " + getName());
+				e.printStackTrace();
+				scanner.close();
+				return;
+			} catch (NumberFormatException e) {
+				serverStatistics.closingConnection(getName());
+
+				System.out.println("At thread " + getName());
 				e.printStackTrace();
 				scanner.close();
 				return;
@@ -151,11 +161,10 @@ public class ServerThread extends Thread {
 			socket.close();
 		} catch (IOException e) {
 			serverStatistics.closingConnection(getName());
-			
+
 			System.out.println("Failed to close socket");
 			return;
 		}
-
 
 	}
 }

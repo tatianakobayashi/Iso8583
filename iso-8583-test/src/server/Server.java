@@ -25,6 +25,9 @@ public class Server {
 			return;
 		}
 		
+		new StatsThread(serverStatistics).start();
+//		System.out.println("Stats thread created");
+		
 		// Listening for new connections
 		while (true) {
 			// Accepting new clients
@@ -38,7 +41,7 @@ public class Server {
 			pool.execute(new ServerThread(socket, serverStatistics));
 			
 			serverStatistics.newConnection();
-			serverStatistics.printStatistics();
+//			serverStatistics.printStatistics();
 		}
 		//pool.shutdown();
 	}

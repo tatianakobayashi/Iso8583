@@ -27,6 +27,8 @@ public class ServerThread extends Thread {
 		InputStream is = null;
 		Scanner scanner = null;
 		DataOutputStream output = null;
+		
+		System.out.println(getName() + " running...");
 
 		// Tries to get input/output references
 		try {
@@ -73,7 +75,7 @@ public class ServerThread extends Thread {
 
 					serverStatistics.putTransactionsByThread(getName(), transactions);
 					serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
-					serverStatistics.printStatistics();
+//					serverStatistics.printStatistics();
 					System.out.println("Total waiting time = " + totalWait);
 					System.out.println("Total processing time = " + totalProcess);
 				} else {
@@ -138,8 +140,11 @@ public class ServerThread extends Thread {
 				serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
 //				serverStatistics.printStatistics();
 				
-				System.out.println("At thread " + getName());
-				e.printStackTrace();
+				System.out.println("At thread " + getName() + " " + e.getMessage());
+//				e.printStackTrace();
+				
+				scanner.close();
+				return;
 			} catch (IOException e) {
 //				serverStatistics.closingConnection(getName());
 
@@ -167,4 +172,6 @@ public class ServerThread extends Thread {
 		}
 
 	}
+	
+	
 }

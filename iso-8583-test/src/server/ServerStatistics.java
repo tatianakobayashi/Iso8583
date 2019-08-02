@@ -143,7 +143,7 @@ public class ServerStatistics {
 //	}
 
 	public void printStatistics() {
-		String msg = "                    ---~~~---\n";
+		String msg = "\n              ooO---~~~---Ooo\n";
 		msg += "Número de conexões: " + numberOfConections;
 		msg += "\nConexões fechadas: " + closedConnections; 
 

@@ -3,6 +3,7 @@ package server;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 
 public class ServerStatistics {
@@ -11,6 +12,8 @@ public class ServerStatistics {
 	private int numberOfConections = 0;
 	private ArrayList<Float> unpackTime = new ArrayList<Float>();
 	private ArrayList<Float> packTime = new ArrayList<Float>();
+	private int closedConnections = 0;
+	private HashSet<String> closed = new HashSet<String>();
 
 	private Semaphore s = new Semaphore(1);
 
@@ -20,7 +23,7 @@ public class ServerStatistics {
 			transactionsByThread.put(threadName, connections);
 			s.release();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+			// TODO Auto-generated caetch block
 			e.printStackTrace();
 		}
 
@@ -28,6 +31,13 @@ public class ServerStatistics {
 
 	public void newConnection() {
 		numberOfConections++;
+	}
+	
+	public void closingConnection(String threadName) {
+		if(!closed.contains(threadName)) {
+			closedConnections++;
+			closed.add(threadName);
+		}
 	}
 
 	private int getTotalTransactions() {
@@ -135,8 +145,10 @@ public class ServerStatistics {
 	public void printStatistics() {
 		String msg = "                    ---~~~---\n";
 		msg += "Número de conexões: " + numberOfConections;
-		msg += "\n                    ---###---";
+		msg += "\nConexões fechadas: " + closedConnections; 
 
+		msg += "\n                    ---###---";
+		
 		try {
 			s.acquire();
 			msg += "\nMédia de transações por conexão: " + getMeanNumberOfTransactions();

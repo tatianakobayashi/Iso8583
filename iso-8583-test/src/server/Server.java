@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 
 public class Server {
 
-	private static final int PORT = 25000;
+	private static final int PORT = 2201;
 	
 	private static ServerStatistics serverStatistics = new ServerStatistics();
 

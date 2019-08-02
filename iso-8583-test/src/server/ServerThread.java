@@ -41,7 +41,7 @@ public class ServerThread extends Thread {
 		Parser parser = new Parser();
 
 		String clientRequest;
-		// String formattedMessage;
+//		 String formattedMessage;
 		String serverResponse;
 
 		boolean flag = true;
@@ -59,6 +59,8 @@ public class ServerThread extends Thread {
 				totalWait += waitingEnd - waitingStart;
 				processStart = System.currentTimeMillis();
 				if (clientRequest == null) {
+					serverStatistics.closingConnection(getName());
+					
 					socket.close();
 					System.out.println("null");
 					scanner.close();
@@ -66,6 +68,8 @@ public class ServerThread extends Thread {
 				} else if (clientRequest.equals("close")) {
 					System.out.println("Close message received");
 					flag = false;
+					
+					serverStatistics.closingConnection(getName());
 					
 					serverStatistics.putTransactionsByThread(getName(), transactions);
 					serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
@@ -78,7 +82,7 @@ public class ServerThread extends Thread {
 
 					// Unpacks the message received from the client
 					long unpackStart = System.currentTimeMillis();
-					// formattedMessage = parser.unpackIsoMsg(clientRequest);
+//					 formattedMessage = parser.unpackIsoMsg(clientRequest);
 					parser.unpackIsoMsg(clientRequest);
 					long unpackFinish = System.currentTimeMillis();
 					
@@ -86,9 +90,9 @@ public class ServerThread extends Thread {
 					
 					// Prints the message in the console
 					System.out.println("Request received");
-					// System.out.println("Client request:");
-					// System.out.println(clientRequest);
-					// System.out.println(formattedMessage);
+					 System.out.println("Client request:");
+					 System.out.println(clientRequest);
+//					 System.out.println(formattedMessage);
 
 					// Gets the STAN number
 					lastAuditNumber = auditNumber;
@@ -129,10 +133,14 @@ public class ServerThread extends Thread {
 					
 				}
 			}catch(NoSuchElementException e){
+//				serverStatistics.closingConnection(getName());
+			
 				serverStatistics.putTransactionsByThread(getName(), transactions);
 				serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
 //				serverStatistics.printStatistics();
 			}catch (IOException e) {
+//				serverStatistics.closingConnection(getName());
+				
 				e.printStackTrace();
 				scanner.close();
 				return;
@@ -142,6 +150,8 @@ public class ServerThread extends Thread {
 		try {
 			socket.close();
 		} catch (IOException e) {
+			serverStatistics.closingConnection(getName());
+			
 			System.out.println("Failed to close socket");
 			return;
 		}

@@ -143,7 +143,7 @@ public class ServerStatistics {
 //	}
 
 	public void printStatistics() {
-		String msg = "\n              ooO---~~~---Ooo\n";
+		String msg = "              ooO---~~~---Ooo\n";
 		msg += "Número de conexões: " + numberOfConections;
 		msg += "\nConexões fechadas: " + closedConnections; 
 
@@ -161,6 +161,8 @@ public class ServerStatistics {
 		}
 
 		s.release();
+		
+		msg += "\n";
 //		System.out.println("                    ---###---");
 //		System.out.println("Média de tempo de empacotamento: " + meanPackTime());
 //		System.out.println("Total de tempo de empacotamento: " + totalPackTime());

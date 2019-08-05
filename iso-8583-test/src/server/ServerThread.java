@@ -134,7 +134,7 @@ public class ServerThread extends Thread {
 
 				}
 			} catch (NoSuchElementException e) {
-//				serverStatistics.closingConnection(getName());
+				serverStatistics.closingConnection(getName());
 
 				serverStatistics.putTransactionsByThread(getName(), transactions);
 				serverStatistics.setTimeByThread(getName(), start, System.currentTimeMillis());
@@ -146,17 +146,17 @@ public class ServerThread extends Thread {
 				scanner.close();
 				return;
 			} catch (IOException e) {
-//				serverStatistics.closingConnection(getName());
+				serverStatistics.closingConnection(getName());
 
 				System.out.println("At thread " + getName());
-				e.printStackTrace();
+//				e.printStackTrace();
 				scanner.close();
 				return;
 			} catch (NumberFormatException e) {
 				serverStatistics.closingConnection(getName());
 
 				System.out.println("At thread " + getName());
-				e.printStackTrace();
+//				e.printStackTrace();
 				scanner.close();
 				return;
 			}

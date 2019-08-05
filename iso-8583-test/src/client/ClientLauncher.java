@@ -8,8 +8,9 @@ public class ClientLauncher {
 	public static void main(String args[]) {
 		int numberOfTerminals = 100;
 		int requestsPerTerminal = 15;
-		String serverIP = "192.168.41.105";
-		final int PORT = 25000;
+//		String serverIP = "192.168.41.105";
+		String serverIP = "127.0.0.1";
+		final int PORT = 2201;
 		String[] requestsPath = new String[4];
 		Random random = new Random();
 		ExecutorService pool = Executors.newFixedThreadPool(numberOfTerminals);
@@ -23,10 +24,10 @@ public class ClientLauncher {
 	}
 	
 	private static void getRequestsPaths(String[] requestsPath) {
-		requestsPath[0] = "/home/cassio/git/Iso8583/iso-8583-test/src/testFiles/req_test_1";
-		requestsPath[1] = "/home/cassio/git/Iso8583/iso-8583-test/src/testFiles/req_test_2";
-		requestsPath[2] = "/home/cassio/git/Iso8583/iso-8583-test/src/testFiles/req_test_3";
-		requestsPath[3] = "/home/cassio/git/Iso8583/iso-8583-test/src/testFiles/req_test_4";
+		requestsPath[0] = "/home/tatiana/git/Iso8583/iso-8583-test/src/testFiles/req_test_1";
+		requestsPath[1] = "/home/tatiana/git/Iso8583/iso-8583-test/src/testFiles/req_test_2";
+		requestsPath[2] = "/home/tatiana/git/Iso8583/iso-8583-test/src/testFiles/req_test_3";
+		requestsPath[3] = "/home/tatiana/git/Iso8583/iso-8583-test/src/testFiles/req_test_4";
 	}
 }
 

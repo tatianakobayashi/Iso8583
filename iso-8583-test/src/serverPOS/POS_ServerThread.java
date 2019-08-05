@@ -40,42 +40,31 @@ public class POS_ServerThread extends Thread {
 		String serverResponse;
 
 		boolean flag = true;
-		byte[] b = new byte[2];
+		byte[] lenInBytes = new byte[2];
 		int reqLen;
-		
 		try {
-			input.read(b, 0, 2);
+			input.read(lenInBytes, 0, 2);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 		// Concatena e converte os dois primeiros bytes para descobrir tamanho da requisição
-		reqLen = getReqLen(b[0], b[1]);
-		//System.out.println("b[0] e b[1] " + String.format("%02x", b[0]) + " " + String.format("%02x", b[1]));
-		//System.out.println("reqLen " + String.format("%08x", reqLen));
+		reqLen = getReqLen(lenInBytes[0], lenInBytes[1]);
 		 
 		// Lê reqLen bytes restantes do buffer de entrada
-		byte[] req = new byte[reqLen];
-		System.out.println("reqLen " + reqLen);
+		byte[] iso_request = new byte[reqLen];
 		try {
-			int bytesRead = input.read(req, 0, reqLen);
-			System.out.println("Bytes read: " + bytesRead);
-			System.out.println("Req size " + req.length);
+			int bytesRead = input.read(iso_request, 0, reqLen);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		String stringReq;
-		try {
-			stringReq = new String(req, "ASCII");
-			System.out.println(stringReq);
-		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}		
-			
-			/*
-			 * String responseCode = "00";
-			 * 
-			 * // Unpacks the message received from the client
+		
+	    StringBuilder sb = new StringBuilder();
+	    for (byte b : iso_request) {
+	        sb.append(String.format("%02X ", b));
+	    }
+	    System.out.println(sb.toString());
+		/*
+		 * // Unpacks the message received from the client
 			 * parser.unpackIsoMsg(clientRequest);
 			 * 
 			 * // Prints the message in the console System.out.println("Client request:");
@@ -107,25 +96,19 @@ public class POS_ServerThread extends Thread {
 			return;
 		}
 	}
-	
+
 	private int getReqLen(byte a, byte b) {
 		int len;
 		int intA = (int) a;
 		int intB = (int) b;
-		//System.out.println("intA " + String.format("%08x", intA));
+
 		intA = intA & 0x000000ff;
-		//System.out.println("intA mask " + String.format("%08x", intA));
-		//System.out.println("intB " + String.format("%08x", intB));
 		intB = intB & 0x000000ff;
-		//System.out.println("intB mask " + String.format("%08x", intB));
-		
+
 		len = a;
-		//System.out.println("len = a " + String.format("%08x", len));
 		len <<= 8;
-		//System.out.println("len << 8 " + String.format("%08x", len));
 		len = (int) (len | intB);
-		//System.out.println("len | b " + String.format("%08x", len));
-			
+
 		return len;
 	}
 }

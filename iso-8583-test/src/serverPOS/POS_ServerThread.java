@@ -52,7 +52,7 @@ public class POS_ServerThread extends Thread {
 		reqLen = getReqLen(b[0], b[1]);
 		//System.out.println("b[0] e b[1] " + String.format("%02x", b[0]) + " " + String.format("%02x", b[1]));
 		//System.out.println("reqLen " + String.format("%08x", reqLen));
-		
+		 
 		// Lê reqLen bytes restantes do buffer de entrada
 		byte[] req = new byte[reqLen];
 		System.out.println("reqLen " + reqLen);

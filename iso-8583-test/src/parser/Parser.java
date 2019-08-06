@@ -494,4 +494,23 @@ public class Parser {
 		}
 		return builder.toString();
 	}
+	
+	public List parse63() {
+		String campo63 = new String(isoRequest.get(63));
+		List<String> valores = new ArrayList<String>();
+		int i = 0;
+		int tam;
+		int inicio = 0;
+		int fim = 2;
+		String aux = new String("");
+		while(fim < campo63.length()) {
+			tam = Integer.parseInt(campo63.substring(inicio, fim));
+			fim += tam;
+			inicio += 2;
+			valores.add(campo63.substring(inicio, fim));
+			fim += 2;
+			inicio += tam;
+		}
+		return valores;
+	}
 }

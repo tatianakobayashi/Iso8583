@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.List;
 
 import parser.Parser;
 
@@ -67,32 +68,28 @@ public class POS_ServerThread extends Thread {
 		
 		String formmated = parser.unpackIsoMsg(stringReq);
 		System.out.println(formmated);
-
-		/*
-		 * // Unpacks the message received from the client
-			 * parser.unpackIsoMsg(clientRequest);
-			 * 
-			 * // Prints the message in the console System.out.println("Client request:");
-			 * System.out.println(clientRequest);
-			 * 
-			 * // Gets the STAN number lastAuditNumber = auditNumber; auditNumber =
-			 * Integer.parseInt(parser.getIsoRequestMap().get(11));
-			 * 
-			 * // Checks if the STAN number is correct if (auditNumber != 0 &&
-			 * lastAuditNumber != 0 && lastAuditNumber != auditNumber - 1) { responseCode =
-			 * "12"; }
-			 * 
-			 * // Sets response fields parser.setResponseCode(responseCode);
-			 * 
-			 * // Packs the response serverResponse = parser.repackIsoMsg();
-			 * 
-			 * System.out.println("Sending response...");
-			 * 
-			 * // Adds line break to the end of the message serverResponse += '\n';
-			 * 
-			 * // Sends response to the client output.writeBytes(serverResponse);
-			 * output.flush();
-			 */
+		List<String> conteudo63 = parser.parse63();
+		String idade = conteudo63.get(0);
+		// TO-DO (Adicionar codigo de resposta [bit 39 = 00 sucesso ou 01 falha])
+		// TO-DO (Escrever mensagem no bit 63)
+		if(validarIdade(idade)) {
+			parser.setResponseCode("00");
+			parser.setBit63("Ok!");
+		}
+		else {
+			parser.setResponseCode("01");
+			parser.setBit63("Falha");
+		}
+ 		/*
+ 		// TO-DO (MTI para 0810)
+ 	
+ 		// TO DO (Adicionar 2 bytes com tamanho da mensagem no inicio)
+		// Packs the response
+		serverResponse = parser.repackIsoMsg();
+		// Sends response to the client 	
+		output.writeBytes(serverResponse);
+		output.flush();
+		*/
 
 		try {
 			socket.close();
@@ -115,5 +112,10 @@ public class POS_ServerThread extends Thread {
 		len = (int) (len | intB);
 
 		return len;
+	}
+	
+	private boolean validarIdade(String idade) {
+		return true;
+		return false;
 	}
 }

@@ -302,7 +302,7 @@ public class Parser {
 //		System.out.println("isoMsg: " + isoMsg);
 
 		String mtiCode = isoMsg.substring(0, 4);
-		System.out.println(mtiCode);
+		System.out.println("MTI: " + mtiCode);
 
 		formattedMsg += quote + "000" + quote + ":" + quote + mtiCode + quote;
 
@@ -351,9 +351,10 @@ public class Parser {
 				// Variable size
 
 //				System.out.println("maxNumber: " +  dataElement.getMaxNumberOfDigits());
-				System.out.println(dataElement);
-				System.out.println(unformattedMsg);
+//				System.out.println(dataElement);
+//				System.out.println(unformattedMsg);
 
+				// If the field size number doesn't have a fixed length
 //				len = Integer.parseInt(unformattedMsg.substring(0, dataElement.getMaxNumberOfDigits()))
 //						+ dataElement.getMaxNumberOfDigits();
 
@@ -361,59 +362,44 @@ public class Parser {
 					len = Integer.parseInt(unformattedMsg.substring(0, 4));
 					lenSize = 4;
 				} else {
+					// Field 125 has only 2 digits of field size
 					len = Integer.parseInt(unformattedMsg.substring(0, 2));
 					lenSize = 2;
 				}
-
+				//
 				len *= 2;
-
+				// Cuts out the length field
 				unformattedMsg = unformattedMsg.substring(lenSize);
-
+				// Gets the field value
 				auxValue = unformattedMsg.substring(0, len);
-
+				// Cuts out the field value from the original string
 				unformattedMsg = unformattedMsg.substring(len);
 
 				if (dataElement.getCode() != 63 || dataElement.getCode() != 62) {
-					StringBuilder sb = new StringBuilder();
-
-					for (int i = 0; i < auxValue.length() - 1; i += 2) {
-						// grab the hex in pairs
-						String output = auxValue.substring(i, (i + 2));
-						// convert hex to decimal
-						int decimal = Integer.parseInt(output, 16);
-						// convert the decimal to character
-						sb.append((char) decimal);
-					}
-					auxValue = sb.toString();
+					// Converts from hex to ASCII text
+					auxValue = hexToASCII(auxValue);
 				}
 
-				System.out.println(len + " " + auxValue);
+//				System.out.println(len + " " + auxValue);
 			} else {
 				// Fixed size
-				System.out.println(dataElement);
-
+//				System.out.println(dataElement);
+				// (Size * 2) when the element is a hexadecimal value
 				if (dataElement.getCode() == 42 || dataElement.getCode() == 37) {
+					// gets the field value
 					auxValue = unformattedMsg.substring(0, dataElement.getSize() * 2);
+					// cuts the field value from the original string
 					unformattedMsg = unformattedMsg.substring(dataElement.getSize() * 2);
-
-					StringBuilder sb = new StringBuilder();
-
-					for (int i = 0; i < auxValue.length() - 1; i += 2) {
-						// grab the hex in pairs
-						String output = auxValue.substring(i, (i + 2));
-						// convert hex to decimal
-						int decimal = Integer.parseInt(output, 16);
-						// convert the decimal to character
-						sb.append((char) decimal);
-					}
-					auxValue = sb.toString();
+					// converts the value from hex to ascii
+					auxValue = hexToASCII(auxValue);
 				} else {
+					// gets the field value
 					auxValue = unformattedMsg.substring(0, dataElement.getSize());
-
+					// cuts the field value from the original string
 					unformattedMsg = unformattedMsg.substring(dataElement.getSize());
 				}
 			}
-//			System.out.println("auxValue: " + auxValue);
+//			 System.out.println("auxValue: " + auxValue);
 			isoRequest.put(element, auxValue);
 		}
 	}
@@ -459,5 +445,53 @@ public class Parser {
 		packedMsg += packDataElements(keysList);
 		// Returning packed Iso
 		return packedMsg;
+	}
+
+	public String bytesToText(byte bytes[]) {
+		StringBuilder sb = new StringBuilder();
+		for (byte b : bytes) {
+			sb.append(String.format("%02X", b));
+		}
+		return sb.toString();
+	}
+
+	// New
+	public Byte[] textToBytes(String hex) {
+		int len = hex.length();
+		Byte[] bytes = new Byte[len / 2];
+		for (int i = 0; i < len; i += 2) {
+			bytes[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i + 1), 16));
+		}
+
+		return bytes;
+	}
+
+	private String hexToASCII(String text) {
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < text.length() - 1; i += 2) {
+			// grab the hex in pairs
+			String output = text.substring(i, (i + 2));
+			// convert hex to decimal
+			int decimal = Integer.parseInt(output, 16);
+			// convert the decimal to character
+			sb.append((char) decimal);
+		}
+		return sb.toString();
+	}
+
+	// New
+	private String asciiToHex(String text) {
+		char[] charText = text.toCharArray();
+
+		// Iterate over char array and cast each element to Integer.
+		StringBuilder builder = new StringBuilder();
+
+		for (char c : charText) {
+			int i = (int) c;
+			// Convert integer value to hex
+			builder.append(Integer.toHexString(i).toUpperCase());
+		}
+		return builder.toString();
 	}
 }

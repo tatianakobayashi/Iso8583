@@ -169,6 +169,11 @@ public class Parser {
 
 		isoRequest.put(39, responseCode);
 	}
+	
+	public void setBit63(String status) {
+		isoRequest.remove(63);
+		isoRequest.put(63, status);
+	}
 
 	// Sets the date field (7) with a string with month, day, hour, minutes and
 	// seconds, 10 characters total. The String must already be formatted

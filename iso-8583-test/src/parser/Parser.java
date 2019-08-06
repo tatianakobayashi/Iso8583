@@ -301,7 +301,7 @@ public class Parser {
 
 		for (int i = 16; i <= len; i += 16) {
 			String sub = binary.substring(i - 16, i);
-			String subBin = Integer.toHexString(Integer.parseInt(sub, 2));
+			String subBin = Integer.toHexString(Integer.parseInt(sub, 2)).toUpperCase();
 
 			while (subBin.length() < 4) {
 				subBin = "0" + subBin;
@@ -466,19 +466,25 @@ public class Parser {
 		return packedMsg;
 	}
 
-	public String bytesToText(byte bytes[]) {
+	public String bytesToText(Byte bytes[]) {
 		StringBuilder sb = new StringBuilder();
-		for (byte b : bytes) {
-			sb.append(String.format("%02X", b));
+		for (Byte b : bytes) {
+			if(b != null)
+				sb.append(String.format("%02X", b));
 		}
+//		System.out.println(sb.toString());
 		return sb.toString();
 	}
 
 	// New
 	public Byte[] textToBytes(String hex) {
 		int len = hex.length();
-		Byte[] bytes = new Byte[len / 2];
-		for (int i = 0; i < len; i += 2) {
+		Byte[] bytes = new Byte[(len / 2) + 2];
+		
+		bytes[0] = (byte) ((byte) ((len/2)  >> 8)& 0x000000ff);
+		bytes[1] = (byte) ((byte) (len/2) & 0x000000ff);		
+		
+		for (int i = 2; i < len; i += 2) {
 			bytes[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i + 1), 16));
 		}
 

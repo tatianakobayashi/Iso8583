@@ -241,14 +241,33 @@ public class Parser {
 				// Variable size fields
 				String auxString = isoRequest.get(field);
 				int sizeOfField = auxString.length();
+				
+				if (field != 63 || field != 62) {
+					auxString = asciiToHex(auxString);
+				}
 
 //				System.out.println("Element: " + field);
 //				System.out.println("packDataElements maxNumberOfDigits: "  +dataElements.get(field).getMaxNumberOfDigits() + " Length: " + sizeOfField);
-				packedMsg += String.format("%0" + dataElements.get(field).getMaxNumberOfDigits() + "d", sizeOfField);
+				
+				if(field != 125) {
+					packedMsg += String.format("%04d", sizeOfField);
+				}
+				else {
+					packedMsg += String.format("%02d", sizeOfField);
+				}
+//				packedMsg += String.format("%0" + dataElements.get(field).getMaxNumberOfDigits() + "d", sizeOfField);
 				packedMsg += auxString;
 			} else {
 				// Fixed size fields
-				packedMsg += isoRequest.get(field);
+				if (field == 42 || field == 37) {
+					String aux= isoRequest.get(field);
+					aux = asciiToHex(aux);
+					packedMsg += aux;
+				}
+				else {
+					packedMsg += isoRequest.get(field);	
+				}
+				
 			}
 		}
 		return packedMsg;
@@ -466,7 +485,7 @@ public class Parser {
 		return bytes;
 	}
 
-	private String hexToASCII(String text) {
+	public String hexToASCII(String text) {
 		StringBuilder sb = new StringBuilder();
 
 		for (int i = 0; i < text.length() - 1; i += 2) {
@@ -481,7 +500,7 @@ public class Parser {
 	}
 
 	// New
-	private String asciiToHex(String text) {
+	public String asciiToHex(String text) {
 		char[] charText = text.toCharArray();
 
 		// Iterate over char array and cast each element to Integer.

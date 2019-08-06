@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import parser.Parser;
 
@@ -83,13 +84,10 @@ public class SingleServerPOS {
 			e1.printStackTrace();
 		}
 		String stringReq;
-		try {
-			stringReq = new String(req, "ASCII");
-			System.out.println(stringReq);
-		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		stringReq = new String(req, StandardCharsets.US_ASCII);
+		System.out.println("StringReq: " + stringReq);
+		
+		parser.unpackIsoMsg(stringReq);
 
 		/*
 		 * String responseCode = "00";

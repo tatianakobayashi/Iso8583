@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
 import parser.Parser;
@@ -60,9 +59,15 @@ public class POS_ServerThread extends Thread {
 		
 	    StringBuilder sb = new StringBuilder();
 	    for (byte b : iso_request) {
-	        sb.append(String.format("%02X ", b));
+	        sb.append(String.format("%02X", b));
 	    }
-	    System.out.println(sb.toString());
+	    String stringReq = sb.toString();
+	    
+	    System.out.println("StringReq: " + stringReq);
+		
+		String formmated = parser.unpackIsoMsg(stringReq);
+		System.out.println(formmated);
+
 		/*
 		 * // Unpacks the message received from the client
 			 * parser.unpackIsoMsg(clientRequest);

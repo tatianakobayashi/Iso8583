@@ -302,7 +302,7 @@ public class Parser {
 //		System.out.println("isoMsg: " + isoMsg);
 
 		String mtiCode = isoMsg.substring(0, 4);
-//		 System.out.println(mtiCode);
+		System.out.println(mtiCode);
 
 		formattedMsg += quote + "000" + quote + ":" + quote + mtiCode + quote;
 
@@ -316,6 +316,8 @@ public class Parser {
 			elementList.remove(0);
 			lastPosition = 36;
 		}
+
+		System.out.println("Element List: " + elementList);
 
 		String hasAnotherLine = ",\n";
 
@@ -340,7 +342,7 @@ public class Parser {
 		isoRequest = new HashMap<Integer, String>();
 
 		String auxValue;
-		Integer len;
+		Integer len, lenSize;
 
 		for (Integer element : elementList) {
 			DataElement dataElement = dataElements.get(element);
@@ -349,18 +351,67 @@ public class Parser {
 				// Variable size
 
 //				System.out.println("maxNumber: " +  dataElement.getMaxNumberOfDigits());
-//				System.out.println(dataElement);
-//				System.out.println(unformattedMsg);
+				System.out.println(dataElement);
+				System.out.println(unformattedMsg);
 
-				len = Integer.parseInt(unformattedMsg.substring(0, dataElement.getMaxNumberOfDigits()))
-						+ dataElement.getMaxNumberOfDigits();
+//				len = Integer.parseInt(unformattedMsg.substring(0, dataElement.getMaxNumberOfDigits()))
+//						+ dataElement.getMaxNumberOfDigits();
 
-				auxValue = unformattedMsg.substring(dataElement.getMaxNumberOfDigits(), len);
+				if (dataElement.getCode() != 125) {
+					len = Integer.parseInt(unformattedMsg.substring(0, 4));
+					lenSize = 4;
+				} else {
+					len = Integer.parseInt(unformattedMsg.substring(0, 2));
+					lenSize = 2;
+				}
+
+				len *= 2;
+
+				unformattedMsg = unformattedMsg.substring(lenSize);
+
+				auxValue = unformattedMsg.substring(0, len);
+
 				unformattedMsg = unformattedMsg.substring(len);
+
+				if (dataElement.getCode() != 63 || dataElement.getCode() != 62) {
+					StringBuilder sb = new StringBuilder();
+
+					for (int i = 0; i < auxValue.length() - 1; i += 2) {
+						// grab the hex in pairs
+						String output = auxValue.substring(i, (i + 2));
+						// convert hex to decimal
+						int decimal = Integer.parseInt(output, 16);
+						// convert the decimal to character
+						sb.append((char) decimal);
+					}
+					auxValue = sb.toString();
+				}
+
+				System.out.println(len + " " + auxValue);
 			} else {
 				// Fixed size
-				auxValue = unformattedMsg.substring(0, dataElement.getSize());
-				unformattedMsg = unformattedMsg.substring(dataElement.getSize());
+				System.out.println(dataElement);
+
+				if (dataElement.getCode() == 42 || dataElement.getCode() == 37) {
+					auxValue = unformattedMsg.substring(0, dataElement.getSize() * 2);
+					unformattedMsg = unformattedMsg.substring(dataElement.getSize() * 2);
+
+					StringBuilder sb = new StringBuilder();
+
+					for (int i = 0; i < auxValue.length() - 1; i += 2) {
+						// grab the hex in pairs
+						String output = auxValue.substring(i, (i + 2));
+						// convert hex to decimal
+						int decimal = Integer.parseInt(output, 16);
+						// convert the decimal to character
+						sb.append((char) decimal);
+					}
+					auxValue = sb.toString();
+				} else {
+					auxValue = unformattedMsg.substring(0, dataElement.getSize());
+
+					unformattedMsg = unformattedMsg.substring(dataElement.getSize());
+				}
 			}
 //			System.out.println("auxValue: " + auxValue);
 			isoRequest.put(element, auxValue);

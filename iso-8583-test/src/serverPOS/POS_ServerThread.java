@@ -26,7 +26,7 @@ public class POS_ServerThread extends Thread {
 		BufferedInputStream input = null;
 		DataOutputStream output = null;
 
-		System.out.println(getName() + " running...");
+		System.out.println("[MAIN] " + getName() + " running...");
 
 		// Tries to get input/output references
 		try {
@@ -34,16 +34,14 @@ public class POS_ServerThread extends Thread {
 			input = new BufferedInputStream(is);
 			output = new DataOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
-			System.out.println("Error when creating server I/O channels");
+			System.out.println("[MAIN] Error when creating server I/O channels");
 			return;
 		}
 
 		Parser parser = new Parser();
 
-		String clientRequest;
 		String serverResponse;
 
-		boolean flag = true;
 		byte[] lenInBytes = new byte[2];
 		int reqLen;
 		try {
@@ -58,7 +56,8 @@ public class POS_ServerThread extends Thread {
 		// Lê reqLen bytes restantes do buffer de entrada
 		byte[] iso_request = new byte[reqLen];
 		try {
-			int bytesRead = input.read(iso_request, 0, reqLen);
+//			int bytesRead = 
+			input.read(iso_request, 0, reqLen);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -69,41 +68,49 @@ public class POS_ServerThread extends Thread {
 		}
 		String stringReq = sb.toString();
 
-		System.out.println("StringReq: " + stringReq);
+		System.out.println("[MAIN] StringReq: " + stringReq);
 
 		String formmated = parser.unpackIsoMsg(stringReq);
-		System.out.println(formmated);
+		System.out.println("[MAIN] " + formmated);
 
 		List<String> conteudo63 = parser.parse63();
 		String idade = conteudo63.get(0);
 		// TO-DO (Adicionar codigo de resposta [bit 39 = 00 sucesso ou 01 falha])
 		// TO-DO (Escrever mensagem no bit 63)
-		if(validarIdade(idade)) {
+		if (validarIdade(idade)) {
 			parser.setResponseCode("00");
 			parser.setBit63("Ok!");
-		}
-		else {
+		} else {
 			parser.setResponseCode("01");
 			parser.setBit63("Falha");
 		}
-		 		
+
 		// Packs the response
 		serverResponse = parser.repackIsoMsg();
 		// Sends response to the client
+		
+		byte bytes[] = parser.textToBytes(serverResponse);
+		
+		String teste = parser.bytesToText(bytes);
+		
+		System.out.println("[MAIN] " + teste);
 
-		System.out.println(parser.getIsoRequestMap().toString());
-		System.out.println(serverResponse);
+		System.out.println("[MAIN] " + parser.getIsoRequestMap().toString());
+		System.out.println("[MAIN] " + serverResponse);
+		
+		System.out.println("[MAIN] " + parser.bytesToText(parser.textToBytes("00AE")));
+//		System.out.println("[MAIN] " + parser.bytesToText());
 		try {
 			output.write(serverResponse.getBytes());
 			output.flush();
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			System.out.println("[MAIN] Failed to send response;");
 		}
 
 		try {
 			socket.close();
 		} catch (IOException e) {
-			System.out.println("Failed to close socket");
+			System.out.println("[MAIN] Failed to close socket");
 			return;
 		}
 	}
@@ -122,20 +129,19 @@ public class POS_ServerThread extends Thread {
 
 		return len;
 	}
-	
+
 	private boolean validarIdade(String idade) {
 		int dia = Integer.parseInt(idade.substring(0, 2));
 		int mes = Integer.parseInt(idade.substring(3, 5));
 		int ano = Integer.parseInt(idade.substring(6, 10));
-		
+
 		LocalDate atual = LocalDate.now();
-		
+
 		try {
 			LocalDate nascimento = LocalDate.of(ano, Month.of(mes), dia);
 			if (Period.between(nascimento, atual).getYears() >= 18) {
 				return true;
-			}
-			else
+			} else
 				return false;
 		} catch (DateTimeException e) {
 			return false;

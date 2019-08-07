@@ -1,5 +1,6 @@
 package parser;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -498,10 +499,9 @@ public class Parser {
 	}
 
 	// Converts a byte array into a Hexadecimal String
-	public String bytesToText(Byte bytes[]) {
+	public String bytesToText(byte[] bytes) {
 		StringBuilder sb = new StringBuilder();
-		for (Byte b : bytes) {
-			if(b != null)
+		for (byte b : bytes) {
 				sb.append(String.format("%02X", b));
 		}
 //		System.out.println("[bytesToText] " + sb.toString());
@@ -516,8 +516,22 @@ public class Parser {
 		bytes[0] = (byte) ((byte) ((len/2)  >> 8)& 0x000000ff);
 		bytes[1] = (byte) ((byte) (len/2) & 0x000000ff);		
 		
+		byte bytes1[] = hex.getBytes(StandardCharsets.US_ASCII);
+		
 		for (int i = 2; i < len; i += 2) {
-			bytes[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i + 1), 16));
+			bytes[(i / 2) + 2] = (byte) ((bytes1[i]  << 4) | bytes1[i+1] );
+		}
+		System.out.println("[textToBytes] bytes1 len = " + bytes1.length);
+		
+		for (byte b : bytes1) {
+			System.out.println(String.format("%02X", b));
+		}
+		
+		System.out.println("[textToBytes] hex len = " + len);
+		
+		
+		for (byte b : bytes) {
+			System.out.println(String.format("%02X", b));
 		}
 
 		return bytes;

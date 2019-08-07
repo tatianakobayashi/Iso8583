@@ -5,6 +5,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.Period;
 import java.util.List;
 
 import parser.Parser;
@@ -69,77 +73,7 @@ public class POS_ServerThread extends Thread {
 
 		String formmated = parser.unpackIsoMsg(stringReq);
 		System.out.println(formmated);
-//<<<<<<< HEAD
-//
-//		parser.setResponseCode("00");
-//		String resp = parser.repackIsoMsg();
-//
-////		System.out.println(resp);
-//		Byte respBytes[] = parser.textToBytes(resp);
-//
-////		System.out.println(respBytes);
-////		System.out.println(parser.bytesToText(respBytes));
-//
-//		byte bytes[] = new byte[respBytes.length];
-//		int i = 0;
-//		for (Byte b : respBytes) {
-//			if (b != null) {
-//				bytes[i] = b.byteValue();
-//				i++;
-//			}
-//		}
-//
-//		try {
-//			output.write(bytes);
-//		} catch (IOException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-//		
-//		System.out.println("Response sent");
-//
-////		for (Byte b : respBytes) {
-////			try {
-////				output.write((byte)b);
-////			} catch (IOException e) {
-////				// TODO Auto-generated catch block
-////				e.printStackTrace();
-////			}
-////		}
-//
-////		System.out.println(respBytes.length);
-////		for (Byte b : respBytes) {
-////			System.out.println(b);
-////		}
-//
-////		System.out.println(parser.unpackIsoMsg(resp));
-//
-//		/*
-//		 * // Unpacks the message received from the client
-//		 * parser.unpackIsoMsg(clientRequest);
-//		 * 
-//		 * // Prints the message in the console System.out.println("Client request:");
-//		 * System.out.println(clientRequest);
-//		 * 
-//		 * // Gets the STAN number lastAuditNumber = auditNumber; auditNumber =
-//		 * Integer.parseInt(parser.getIsoRequestMap().get(11));
-//		 * 
-//		 * // Checks if the STAN number is correct if (auditNumber != 0 &&
-//		 * lastAuditNumber != 0 && lastAuditNumber != auditNumber - 1) { responseCode =
-//		 * "12"; }
-//		 * 
-//		 * // Sets response fields parser.setResponseCode(responseCode);
-//		 * 
-//		 * // Packs the response serverResponse = parser.repackIsoMsg();
-//		 * 
-//		 * System.out.println("Sending response...");
-//		 * 
-//		 * // Adds line break to the end of the message serverResponse += '\n';
-//		 * 
-//		 * // Sends response to the client output.writeBytes(serverResponse);
-//		 * output.flush();
-//		 */
-//=======
+
 		List<String> conteudo63 = parser.parse63();
 		String idade = conteudo63.get(0);
 		// TO-DO (Adicionar codigo de resposta [bit 39 = 00 sucesso ou 01 falha])
@@ -188,7 +122,22 @@ public class POS_ServerThread extends Thread {
 	}
 	
 	private boolean validarIdade(String idade) {
-		return true;
-//		return false;
+		int dia = Integer.parseInt(idade.substring(0, 2));
+		int mes = Integer.parseInt(idade.substring(3, 5));
+		int ano = Integer.parseInt(idade.substring(6, 10));
+		
+		LocalDate atual = LocalDate.now();
+		
+		try {
+			LocalDate nascimento = LocalDate.of(ano, Month.of(mes), dia);
+			if (Period.between(nascimento, atual).getYears() >= 18) {
+				return true;
+			}
+			else
+				return false;
+		} catch (DateTimeException e) {
+			return false;
+		}
+
 	}
 }

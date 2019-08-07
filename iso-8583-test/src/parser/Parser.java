@@ -228,6 +228,13 @@ public class Parser {
 
 	// Recreates an unformatted String from the isoRequest HashMap
 	public String repackIsoMsg() {
+		isoRequest.remove(62);
+		isoRequest.remove(114);
+		isoRequest.remove(115);
+		isoRequest.remove(119);
+		isoRequest.remove(120);
+		isoRequest.remove(121);
+		
 		// This is the String to be returned
 		String packedMsg = "";
 

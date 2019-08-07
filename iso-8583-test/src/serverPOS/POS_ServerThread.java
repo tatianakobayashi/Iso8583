@@ -86,17 +86,19 @@ public class POS_ServerThread extends Thread {
 			parser.setResponseCode("01");
 			parser.setBit63("Falha");
 		}
- 		/*
- 		// TO-DO (MTI para 0810)
- 	
- 		// TO DO (Adicionar 2 bytes com tamanho da mensagem no inicio)
+		 		
 		// Packs the response
 		serverResponse = parser.repackIsoMsg();
-		// Sends response to the client 	
-		output.writeBytes(serverResponse);
-		output.flush();
-		*/
-//>>>>>>> refs/remotes/origin/master
+		// Sends response to the client
+
+		System.out.println(parser.getIsoRequestMap().toString());
+		System.out.println(serverResponse);
+		try {
+			output.write(serverResponse.getBytes());
+			output.flush();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 
 		try {
 			socket.close();

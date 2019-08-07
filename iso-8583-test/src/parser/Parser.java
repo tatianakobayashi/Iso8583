@@ -190,6 +190,15 @@ public class Parser {
 	public void setThreadName(String threadName) {
 		isoRequest.put(123, threadName);
 	}
+	
+	public void unsetBitsForResponse() {
+		isoRequest.remove(62);
+		isoRequest.remove(120);
+		isoRequest.remove(114);
+		isoRequest.remove(115);
+		isoRequest.remove(119);
+		isoRequest.remove(121);		
+	}
 
 	// Returns a HashMap with all the dataFields from the request
 	public HashMap<Integer, String> getIsoRequestMap() {

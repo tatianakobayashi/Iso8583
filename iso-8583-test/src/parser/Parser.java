@@ -482,9 +482,9 @@ public class Parser {
 	}
 
 	// New
-	public Byte[] textToBytes(String hex) {
+	public byte[] textToBytes(String hex) {
 		int len = hex.length();
-		Byte[] bytes = new Byte[(len / 2) + 2];
+		byte[] bytes = new byte[(len / 2) + 2];
 		
 		bytes[0] = (byte) ((byte) ((len/2)  >> 8)& 0x000000ff);
 		bytes[1] = (byte) ((byte) (len/2) & 0x000000ff);		
@@ -525,14 +525,13 @@ public class Parser {
 		return builder.toString();
 	}
 	
-	public List parse63() {
+	public List<String> parse63() {
 		String campo63 = new String(isoRequest.get(63));
 		List<String> valores = new ArrayList<String>();
 		int i = 0;
 		int tam;
 		int inicio = 0;
 		int fim = 2;
-		String aux = new String("");
 		while(fim < campo63.length()) {
 			tam = Integer.parseInt(campo63.substring(inicio, fim));
 			fim += tam;

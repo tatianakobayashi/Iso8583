@@ -170,8 +170,8 @@ public class Parser {
 		isoRequest.put(39, responseCode);
 	}
 	
+	// Sets the 63th bit's value
 	public void setBit63(String status) {
-		isoRequest.remove(63);
 		isoRequest.put(63, status);
 	}
 
@@ -191,6 +191,7 @@ public class Parser {
 		isoRequest.put(123, threadName);
 	}
 	
+	// Removes bits from the HashMap
 	public void unsetBitsForResponse() {
 		isoRequest.remove(62);
 		isoRequest.remove(120);
@@ -339,16 +340,20 @@ public class Parser {
 		String formattedMsg = "{\n";
 		String quote = "\"";
 
-//		System.out.println("isoMsg: " + isoMsg);
+//		System.out.println("[unpackIsoMsg] isoMsg: " + isoMsg);
 
+		// Extract MTI Code
 		String mtiCode = isoMsg.substring(0, 4);
-		System.out.println("MTI: " + mtiCode);
+		System.out.println("[unpackIsoMsg] MTI: " + mtiCode);
 
+		// Initialize final String
 		formattedMsg += quote + "000" + quote + ":" + quote + mtiCode + quote;
 
+		// Extract the first bitmap
 		String firstBitmap = isoMsg.substring(4, 20);
 		List<Integer> elementList = decodeBitmap(firstBitmap, 0);
 
+		// If it exists, extract the second bitmap
 		int lastPosition = 20;
 		if (elementList.get(0) == 1) {
 			String secondBitmap = isoMsg.substring(20, 36);
@@ -357,21 +362,25 @@ public class Parser {
 			lastPosition = 36;
 		}
 
-		System.out.println("Element List: " + elementList);
+		System.out.println("[unpackIsoMsg] Element List: " + elementList);
 
 		String hasAnotherLine = ",\n";
 
+		// Extracts the fields' values
 		String elements = isoMsg.substring(lastPosition);
 
-//		System.out.println("Elements: " + elements);
+//		System.out.println("[unpackIsoMsg] Elements: " + elements);
 
+		// Save values in HashMap
 		getDataElements(elementList, elements);
 
+		// Build final String
 		for (Integer element : elementList) {
 			formattedMsg += hasAnotherLine + quote + String.format("%03d", element) + quote + ":" + quote
 					+ isoRequest.get(element) + quote;
 		}
 
+		// Save MTI Code
 		isoRequest.put(0, mtiCode);
 
 		return formattedMsg + "\n}";
@@ -390,9 +399,9 @@ public class Parser {
 			if (dataElement.getVariable()) {
 				// Variable size
 
-//				System.out.println("maxNumber: " +  dataElement.getMaxNumberOfDigits());
-//				System.out.println(dataElement);
-//				System.out.println(unformattedMsg);
+//				System.out.println("[getDataElements] maxNumber: " +  dataElement.getMaxNumberOfDigits());
+//				System.out.println("[getDataElements] " + dataElement);
+//				System.out.println("[getDataElements] " + unformattedMsg);
 
 				// If the field size number doesn't have a fixed length
 //				len = Integer.parseInt(unformattedMsg.substring(0, dataElement.getMaxNumberOfDigits()))
@@ -420,10 +429,10 @@ public class Parser {
 					auxValue = hexToASCII(auxValue);
 				}
 
-//				System.out.println(len + " " + auxValue);
+//				System.out.println("[getDataElements] " + len + " " + auxValue);
 			} else {
 				// Fixed size
-//				System.out.println(dataElement);
+//				System.out.println("[getDataElements] " + dataElement);
 				// (Size * 2) when the element is a hexadecimal value
 				if (dataElement.getCode() == 42 || dataElement.getCode() == 37) {
 					// gets the field value
@@ -439,7 +448,7 @@ public class Parser {
 					unformattedMsg = unformattedMsg.substring(dataElement.getSize());
 				}
 			}
-//			 System.out.println("auxValue: " + auxValue);
+//			 System.out.println("[getDataElements] auxValue: " + auxValue);
 			isoRequest.put(element, auxValue);
 		}
 	}
@@ -452,7 +461,7 @@ public class Parser {
 
 		for (int i = 4; i <= bitmap.length(); i += 4) {
 			String sub = bitmap.substring(i - 4, i);
-//			System.out.println(sub);
+//			System.out.println("[decodeBitmap] " + sub);
 			Integer decimal = Integer.parseInt(sub, 16);
 
 			String aux = Integer.toBinaryString(decimal);
@@ -464,7 +473,7 @@ public class Parser {
 			binary += aux;
 		}
 
-//		System.out.println(binary);
+//		System.out.println("[decodeBitmap] " + binary);
 
 		for (int i = 0; i < binary.length(); i++) {
 			if (binary.charAt(i) == '1') {
@@ -475,6 +484,7 @@ public class Parser {
 		return elementList;
 	}
 
+	// 
 	public String concatMsg() {
 		String packedMsg = "";
 		// Appending MTI to our final string
@@ -487,17 +497,18 @@ public class Parser {
 		return packedMsg;
 	}
 
+	// Converts a byte array into a Hexadecimal String
 	public String bytesToText(Byte bytes[]) {
 		StringBuilder sb = new StringBuilder();
 		for (Byte b : bytes) {
 			if(b != null)
 				sb.append(String.format("%02X", b));
 		}
-//		System.out.println(sb.toString());
+//		System.out.println("[bytesToText] " + sb.toString());
 		return sb.toString();
 	}
 
-	// New
+	// Converts a Hexadecimal String into a byte array
 	public byte[] textToBytes(String hex) {
 		int len = hex.length();
 		byte[] bytes = new byte[(len / 2) + 2];
@@ -512,6 +523,7 @@ public class Parser {
 		return bytes;
 	}
 
+	// Converts a hexadecimal String to an ASCII String
 	public String hexToASCII(String text) {
 		StringBuilder sb = new StringBuilder();
 
@@ -526,7 +538,7 @@ public class Parser {
 		return sb.toString();
 	}
 
-	// New
+	// Converts a ASCII String to an hexadecimal String
 	public String asciiToHex(String text) {
 		char[] charText = text.toCharArray();
 
@@ -541,6 +553,7 @@ public class Parser {
 		return builder.toString();
 	}
 	
+	// Separates the values in the 63th bit
 	public List<String> parse63() {
 		String campo63 = new String(isoRequest.get(63));
 		List<String> valores = new ArrayList<String>();

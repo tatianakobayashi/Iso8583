@@ -11,7 +11,8 @@ import java.time.Month;
 import java.time.Period;
 import java.util.List;
 
-import parser.Parser;
+import parser.Context;
+import parser.ParserISO;
 
 public class POS_ServerThread extends Thread {
 	protected Socket socket;
@@ -28,7 +29,7 @@ public class POS_ServerThread extends Thread {
 
 		System.out.println("[MAIN] " + getName() + " running...");
 
-		// Tries to get input/output references
+		// Tenta referenciar canais de entrada e saída para esse socket
 		try {
 			is = socket.getInputStream();
 			input = new BufferedInputStream(is);
@@ -37,46 +38,33 @@ public class POS_ServerThread extends Thread {
 			System.out.println("[MAIN] Error when creating server I/O channels");
 			return;
 		}
-
-		Parser parser = new Parser();
-
-		String serverResponse;
-
-		byte[] lenInBytes = new byte[2];
-		int reqLen;
+		
+		// Instâncias de parser e contexto
+		ParserISO parser = new ParserISO();
+		Context context = new Context();
+		
+		// Obtém os dois primeiros bytes da request e descobre o tamanho
+		byte[] headerTamanho = new byte[2];
 		try {
-			input.read(lenInBytes, 0, 2);
+			input.read(headerTamanho, 0, 2);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		// Concatena e converte os dois primeiros bytes para descobrir tamanho da
-		// requisição
-		reqLen = getReqLen(lenInBytes[0], lenInBytes[1]);
-
-		// Lê reqLen bytes restantes do buffer de entrada
-		byte[] iso_request = new byte[reqLen];
-		try {
-//			int bytesRead = 
-			input.read(iso_request, 0, reqLen);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-
-		StringBuilder sb = new StringBuilder();
-		for (byte b : iso_request) {
-			sb.append(String.format("%02X", b));
-		}
-		String stringReq = sb.toString();
-
-		System.out.println("[MAIN] StringReq: " + stringReq);
-
-		String formmated = parser.unpackIsoMsg(stringReq);
-		System.out.println("[MAIN] " + formmated);
-
+		context.setIsoRequestLen(parser.getReqLen(headerTamanho[0], headerTamanho[1]));
+		
+		// Lê e armazena o resto da request
+		context.setRawIsoRequest(input);
+		// Obtém request como hex
+		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
+		// Processa request e gera mapa de campo->conteudo
+		parser.unpackIsoRequest(context.getIsoRequestHex(), context.getIsoRequestMap());
+		// Gera o map da response a partir do map da request, mas sem os campos
+		// "desnecessários"
+		parser.makeResponseMap(context.getIsoRequestMap(), context.getIsoResponseMap());
+		
 		List<String> conteudo63 = parser.parse63();
 		String idade = conteudo63.get(0);
-		// TO-DO (Adicionar codigo de resposta [bit 39 = 00 sucesso ou 01 falha])
-		// TO-DO (Escrever mensagem no bit 63)
+
 		if (validarIdade(idade)) {
 			parser.setResponseCode("00");
 			parser.setBit63("Ok!");
@@ -86,7 +74,7 @@ public class POS_ServerThread extends Thread {
 		}
 
 		// Packs the response
-		serverResponse = parser.repackIsoMsg();
+		parser.repackIsoMsg();
 		// Sends response to the client
 		
 		byte bytes[] = parser.textToBytes(serverResponse);
@@ -112,21 +100,6 @@ public class POS_ServerThread extends Thread {
 			System.out.println("[MAIN] Failed to close socket");
 			return;
 		}
-	}
-
-	private int getReqLen(byte a, byte b) {
-		int len;
-		int intA = (int) a;
-		int intB = (int) b;
-
-		intA = intA & 0x000000ff;
-		intB = intB & 0x000000ff;
-
-		len = a;
-		len <<= 8;
-		len = (int) (len | intB);
-
-		return len;
 	}
 
 	private boolean validarIdade(String idade) {

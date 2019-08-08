@@ -98,8 +98,7 @@ public class POS_ServerThread extends Thread {
 		System.out.println("[MAIN] " + parser.getIsoRequestMap().toString());
 		System.out.println("[MAIN] " + serverResponse);
 		
-		System.out.println("[MAIN] " + parser.bytesToText(parser.textToBytes("00AE")));
-//		System.out.println("[MAIN] " + parser.bytesToText());
+		
 		try {
 			output.write(serverResponse.getBytes());
 			output.flush();

@@ -82,6 +82,10 @@ public class POS_ServerThread extends Thread {
 		// Transforma a string response de hex para bytes
 		parser.hexToBytes(context.getIsoResponseHex(), context.getRawIsoResponse());
 		
+		System.out.println("RequestHex " + context.getIsoRequestHex());
+		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
+		
+		
 		// Envia response para cliente
 		try {
 			output.write(context.getRawIsoResponse());

@@ -30,7 +30,7 @@ public class ParserISO {
 
 	// Altera bit 63 (TODO - colocar como hex)
 	public void setBit63(String status, HashMap<Integer, String> map) {
-		map.put(63, status);
+		map.put(63, bytesToHex(status.getBytes()));
 	}
 
 	// Cria uma String em hex a partir do map da response
@@ -237,7 +237,7 @@ public class ParserISO {
 			aux = charToByte(a);
 
 			aux = (byte) (aux << 4);
-			
+
 			a = hex.charAt(i + 1);
 			aux = (byte) (aux | charToByte(a));
 
@@ -289,6 +289,7 @@ public class ParserISO {
 	public List<String> parse63(HashMap<Integer, String> map) {
 		List<String> valores = new ArrayList<String>();
 		String campo63 = map.get(63);
+		campo63 = hexToASCII(campo63);
 		if (campo63 == null)
 			return null;
 
@@ -334,5 +335,20 @@ public class ParserISO {
 		responseMap.remove(119);
 		responseMap.remove(120);
 		responseMap.remove(121);
+	}
+
+	// Converts a hexadecimal String to an ASCII String
+	public String hexToASCII(String text) {
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < text.length() - 1; i += 2) {
+			// grab the hex in pairs
+			String output = text.substring(i, (i + 2));
+			// convert hex to decimal
+			int decimal = Integer.parseInt(output, 16);
+			// convert the decimal to character
+			sb.append((char) decimal);
+		}
+		return sb.toString();
 	}
 }

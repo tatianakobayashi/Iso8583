@@ -61,34 +61,28 @@ public class POS_ServerThread extends Thread {
 		// Gera o map da response a partir do map da request, mas sem os campos
 		// "desnecessários"
 		parser.makeResponseMap(context.getIsoRequestMap(), context.getIsoResponseMap());
-		
-		List<String> conteudo63 = parser.parse63();
+		// Altera MTI para 0810
+		parser.setMTI("0810", context.getIsoResponseMap());
+		// Checar bit 63, validar informações e inserir codigo de resposta
+		List<String> conteudo63 = parser.parse63(context.getIsoResponseMap());
 		String idade = conteudo63.get(0);
-
 		if (validarIdade(idade)) {
-			parser.setResponseCode("00");
-			parser.setBit63("Ok!");
+			parser.setBit39("00", context.getIsoResponseMap());
+			parser.setBit63("Ok!", context.getIsoResponseMap());
 		} else {
-			parser.setResponseCode("01");
-			parser.setBit63("Falha");
+			parser.setBit39("01", context.getIsoResponseMap());
+			parser.setBit63("Falha", context.getIsoResponseMap());
 		}
 
-		// Packs the response
-		parser.repackIsoMsg();
+		// Empacota a response como hex
+		context.setIsoResponseHex(parser.packIsoResponse(context.getIsoResponseMap()));
+		
 		// Sends response to the client
 		
-		byte bytes[] = parser.textToBytes(serverResponse);
-		
-		String teste = parser.bytesToText(bytes);
-		
-		System.out.println("[MAIN] " + teste);
-
-		System.out.println("[MAIN] " + parser.getIsoRequestMap().toString());
-		System.out.println("[MAIN] " + serverResponse);
 		
 		
 		try {
-			output.write(serverResponse.getBytes());
+			output.write(context.getRawIsoResponse());
 			output.flush();
 		} catch (IOException e1) {
 			System.out.println("[MAIN] Failed to send response;");

@@ -13,78 +13,47 @@ public class ParserISO {
 	//
 	ArrayList<Integer> keysList = new ArrayList<Integer>();
 
-
 	// Construtor
 	public ParserISO() {
 		dataElements = DataElementMap.getInstance();
 	}
 
-	// Sets the response code(39) and changes the MTI function to a Response
-	public void setResponseCode(String responseCode) {
-		String mti = isoRequest.get(0);
-		int mti_int = Integer.parseInt(mti);
-
-		int function = (mti_int % 100) / 10;
-
-		if (function % 2 == 0) {
-			mti_int += 10;
-		}
-		mti = String.format("%04d", mti_int);
-
-//		System.out.println("New MTI: " + mti);
-		isoRequest.put(0, mti);
-
-		isoRequest.put(39, responseCode);
+	// Altera MTI para newMTI
+	public void setMTI(String newMTI, HashMap<Integer, String> map) {
+		map.put(0, newMTI);
 	}
 
-	// Sets the 63rd bit's value
-	public void setBit63(String status) {
-		isoRequest.put(63, status);
+	// Altera código de resposta (bit 39)
+	public void setBit39(String status, HashMap<Integer, String> map) {
+		map.put(39, status);
 	}
 
-	// Creates a String from a formatted Iso message
-	public void packIsoMsg(String isoMsg) {
-		// Splitting formatted Iso message
-		isoMsg = isoMsg.replace('"', ' ').replace('{', ' ').replace('}', ' ').trim();
-
-		// System.out.println("isoMsg pack: " + isoMsg);
-
-		String splittedMsg[] = isoMsg.split(",");
-		List<String> splittedMsgList = Arrays.asList(splittedMsg);
-		// Creating hashmap from splitted isoMsg
-		isoRequest = new HashMap<Integer, String>(splittedMsgList.size());
-		for (String string : splittedMsgList) {
-			String splittedLine[] = string.split(":");
-			splittedLine[0] = splittedLine[0].trim();
-			splittedLine[1] = splittedLine[1].trim();
-			Integer auxKey = Integer.parseInt(splittedLine[0]);
-			isoRequest.put(auxKey, splittedLine[1]);
-			keysList.add(auxKey);
-		}
+	// Altera bit 63 (TODO - colocar como hex)
+	public void setBit63(String status, HashMap<Integer, String> map) {
+		map.put(63, status);
 	}
 
-	// Recreates an unformatted String from the isoRequest HashMap
-	public String repackIsoMsg() {
-		
+	// Cria uma String em hex a partir do map da response
+	public String packIsoResponse(HashMap<Integer, String> responseMap) {
 
 		// This is the String to be returned
 		String packedMsg = "";
 
 		// Appending MTI to our final string
-		packedMsg += isoRequest.get(0);
+		packedMsg += responseMap.get(0);
 		// Creating bitMap
 		List<Integer> keys = new ArrayList<Integer>();
-		keys.addAll(isoRequest.keySet());
+		keys.addAll(responseMap.keySet());
 		keys.sort(null);
 		packedMsg += createBitmap(keys);
 		// Adding data elements
-		packedMsg += packDataElements(keys);
+		packedMsg += packDataElements(keys, responseMap);
 		// Returning packed Iso
 		return packedMsg;
 	}
 
 	// Creates one String with all of the fields values
-	private String packDataElements(List<Integer> fieldsList) {
+	private String packDataElements(List<Integer> fieldsList, HashMap<Integer, String> responseMap) {
 		String packedMsg = "";
 
 		for (Integer field : fieldsList) {
@@ -92,39 +61,28 @@ public class ParserISO {
 				continue;
 			if (dataElements.get(field).getVariable()) {
 				// Variable size fields
-				String auxString = isoRequest.get(field);
-				int sizeOfField = auxString.length();
-
-				if (field != 63 || field != 62) {
-					auxString = asciiToHex(auxString);
-				}
-
-//				System.out.println("Element: " + field);
-//				System.out.println("packDataElements maxNumberOfDigits: "  +dataElements.get(field).getMaxNumberOfDigits() + " Length: " + sizeOfField);
-
+				String auxString = responseMap.get(field);
+				int sizeOfField = auxString.length() / 2;
 				if (field != 125) {
 					packedMsg += String.format("%04d", sizeOfField);
 				} else {
 					packedMsg += String.format("%02d", sizeOfField);
 				}
-//				packedMsg += String.format("%0" + dataElements.get(field).getMaxNumberOfDigits() + "d", sizeOfField);
 				packedMsg += auxString;
 			} else {
 				// Fixed size fields
 				if (field == 42 || field == 37) {
-					String aux = isoRequest.get(field);
-					aux = asciiToHex(aux);
+					String aux = responseMap.get(field);
 					packedMsg += aux;
 				} else {
-					packedMsg += isoRequest.get(field);
+					packedMsg += responseMap.get(field);
 				}
-
 			}
 		}
 		return packedMsg;
 	}
 
-	// Cria o bitmap para a response 
+	// Cria o bitmap para a response
 	private String createBitmap(List<Integer> keysList) {
 		String bitMask = "";
 		Integer bitMaskSize = keysList.get(keysList.size() - 1);
@@ -191,7 +149,7 @@ public class ParserISO {
 		Integer len, lenSize;
 		for (Integer element : elementList) {
 			DataElement dataElement = dataElements.get(element);
-			
+
 			// Se o campo tiver tamanho variável
 			if (dataElement.getVariable()) {
 
@@ -210,10 +168,10 @@ public class ParserISO {
 				auxValue = elements.substring(0, len);
 				// Cuts out the field value from the original string
 				elements = elements.substring(len);
-				
-			// Se o campo tiver tamanho fixo
+
+				// Se o campo tiver tamanho fixo
 			} else {
-			// (Size * 2) when the element is a hexadecimal value
+				// (Size * 2) when the element is a hexadecimal value
 				if (dataElement.getCode() == 42 || dataElement.getCode() == 37) {
 					// gets the field value
 					auxValue = elements.substring(0, dataElement.getSize() * 2);
@@ -262,12 +220,14 @@ public class ParserISO {
 		}
 		return sb.toString();
 	}
-	
-	// Separates the values in the 63th bit
-	public List<String> parse63() {
-		String campo63 = new String(isoRequest.get(63));
+
+	//
+	public List<String> parse63(HashMap<Integer, String> map) {
 		List<String> valores = new ArrayList<String>();
-		int i = 0;
+		String campo63 = map.get(63);
+		if (campo63 == null)
+			return null;
+
 		int tam;
 		int inicio = 0;
 		int fim = 2;
@@ -298,7 +258,7 @@ public class ParserISO {
 
 		return len;
 	}
-	
+
 	// Recebe dois maps, um da request e outro da response e preenche o da response
 	// com os campos adequados (OBS: não adiciona campos como o bit 39 e nem altera
 	// o conteúdo dos campos)

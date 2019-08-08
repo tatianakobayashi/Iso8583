@@ -77,10 +77,12 @@ public class POS_ServerThread extends Thread {
 		// Empacota a response como hex
 		context.setIsoResponseHex(parser.packIsoResponse(context.getIsoResponseMap()));
 		
-		// Sends response to the client
+		// Aloca o espaço necessario no rawResponse (hexresponse + 2)
+		context.allocRawIsoResponse((context.getIsoRequestHex().length() / 2) + 2);
+		// Transforma a string response de hex para bytes
+		parser.hexToBytes(context.getIsoResponseHex(), context.getRawIsoResponse());
 		
-		
-		
+		// Envia response para cliente
 		try {
 			output.write(context.getRawIsoResponse());
 			output.flush();

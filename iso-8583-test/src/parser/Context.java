@@ -56,6 +56,10 @@ public class Context {
 	public void setIsoResponseHex(String respAsHex) {
 		this.isoResponseHex = respAsHex;
 	}
+	
+	public String getIsoResponseHex() {
+		return this.isoResponseHex;
+	}
 
 	public String getIsoRequestHex() {
 		return this.isoRequestHex;
@@ -63,6 +67,10 @@ public class Context {
 
 	public HashMap<Integer, String> getIsoResponseMap() {
 		return this.isoResponseMap;
+	}
+	
+	public void allocRawIsoResponse(int len) {
+		this.rawIsoResponse = new byte[len];
 	}
 	
 	// (TODO) Imprime a request de forma mais legível

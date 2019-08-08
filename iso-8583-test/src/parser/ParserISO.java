@@ -221,7 +221,71 @@ public class ParserISO {
 		return sb.toString();
 	}
 
-	//
+	// Converte uma string de hex em um array de bytes
+	public void hexToBytes(String hex, byte[] bytes) {
+		int tamEmBytes = (hex.length() / 2);
+
+		bytes[0] = (byte) (((byte) (tamEmBytes >> 8)) & 0x000000ff);
+		bytes[1] = (byte) ((byte) (tamEmBytes) & 0x000000ff);
+
+		char a;
+		byte aux;
+		for (int i = 0; i < tamEmBytes; i += 2) {
+			aux = (byte) 0x00;
+
+			a = hex.charAt(i);
+			aux = charToByte(a);
+
+			aux = (byte) (aux << 4);
+			
+			a = hex.charAt(i + 1);
+			aux = (byte) (aux | charToByte(a));
+
+			bytes[i + 2] = aux;
+		}
+	}
+
+	// Recebe um char e retorna um byte de acordo com seu valor hex
+	private byte charToByte(char a) {
+		switch (a) {
+		case '0':
+			return (byte) 0x00;
+		case '1':
+			return (byte) 0x01;
+		case '2':
+			return (byte) 0x02;
+		case '3':
+			return (byte) 0x03;
+		case '4':
+			return (byte) 0x04;
+		case '5':
+			return (byte) 0x05;
+		case '6':
+			return (byte) 0x06;
+		case '7':
+			return (byte) 0x07;
+		case '8':
+			return (byte) 0x08;
+		case '9':
+			return (byte) 0x09;
+		case 'A':
+			return (byte) 0x0a;
+		case 'B':
+			return (byte) 0x0b;
+		case 'C':
+			return (byte) 0x0c;
+		case 'D':
+			return (byte) 0x0d;
+		case 'E':
+			return (byte) 0x0e;
+		case 'F':
+			return (byte) 0x0f;
+		default:
+			return (byte) 0xff;
+		}
+	}
+
+	// Interpreta o bit 63 e retorna uma lista com seus conteudos antes concatenados
 	public List<String> parse63(HashMap<Integer, String> map) {
 		List<String> valores = new ArrayList<String>();
 		String campo63 = map.get(63);

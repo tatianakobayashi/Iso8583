@@ -54,10 +54,20 @@ public class POS_ServerThread extends Thread {
 		
 		// Lê e armazena o resto da request
 		context.setRawIsoRequest(input);
+		
+		// Envia response para cliente
+				try {
+					output.write(headerTamanho);
+					output.write(context.getRawIsoRequest());
+					output.flush();
+				} catch (IOException e1) {
+					System.out.println("[MAIN] Failed to send response;");
+				}
+		
 		// Obtém request como hex
-		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
+		//context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
 		// Processa request e gera mapa de campo->conteudo
-		parser.unpackIsoRequest(context.getIsoRequestHex(), context.getIsoRequestMap());
+		parser.unpackIsoRequest(context.getRawIsoRequest(), context.getIsoRequestMap());
 		// Gera o map da response a partir do map da request, mas sem os campos
 		// "desnecessários"
 		parser.makeResponseMap(context.getIsoRequestMap(), context.getIsoResponseMap());
@@ -83,7 +93,13 @@ public class POS_ServerThread extends Thread {
 		parser.hexToBytes(context.getIsoResponseHex(), context.getRawIsoResponse());
 		
 		System.out.println("RequestHex " + context.getIsoRequestHex());
+		System.out.println(parser.packIsoResponse(context.getIsoResponseMap()));
+		
+		
 		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
+		
+		
+		
 		
 		
 		// Envia response para cliente

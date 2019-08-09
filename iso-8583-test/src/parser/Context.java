@@ -9,8 +9,8 @@ public class Context {
 
 	// Mapas de (número do campo)-->(conteúdo do campo), para request e response
 	// respectivamente
-	private HashMap<Integer, String> isoRequestMap = new HashMap<Integer, String>();
-	private HashMap<Integer, String> isoResponseMap = new HashMap<Integer, String>();
+	private HashMap<Integer, FieldWrapper> isoRequestMap = new HashMap<Integer, FieldWrapper>();
+	private HashMap<Integer, FieldWrapper> isoResponseMap = new HashMap<Integer, FieldWrapper>();
 	// Array de bytes recebido do socket sem os dois bytes de tamanho
 	private byte[] rawIsoRequest;
 	// Array de bytes com a response a nível de socket
@@ -45,7 +45,7 @@ public class Context {
 		return this.rawIsoResponse;
 	}
 
-	public HashMap<Integer, String> getIsoRequestMap() {
+	public HashMap<Integer, FieldWrapper> getIsoRequestMap() {
 		return this.isoRequestMap;
 	}
 
@@ -65,7 +65,7 @@ public class Context {
 		return this.isoRequestHex;
 	}
 
-	public HashMap<Integer, String> getIsoResponseMap() {
+	public HashMap<Integer, FieldWrapper> getIsoResponseMap() {
 		return this.isoResponseMap;
 	}
 	

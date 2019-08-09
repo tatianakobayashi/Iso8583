@@ -55,7 +55,7 @@ public class ParserISO {
 	// Creates one String with all of the fields values
 	private String packDataElements(List<Integer> fieldsList, HashMap<Integer, String> responseMap) {
 		String packedMsg = "";
-
+		//TODO Checar campo a campo
 		for (Integer field : fieldsList) {
 			if (field == 0 || field == 1)
 				continue;
@@ -121,7 +121,7 @@ public class ParserISO {
 
 	// Cria um mapa (campo)-->(conteúdo) a partir de uma requestIso representada
 	// como uma String de hexadecimais
-	public void unpackIsoRequest(String isoMsgHex, HashMap<Integer, String> map) {
+	public void unpackIsoRequest(byte[] isoMsg, HashMap<Integer, FieldWrapper> map) {
 
 		// Obtém código MTI
 		map.put(0, isoMsgHex.substring(0, 4));
@@ -229,19 +229,22 @@ public class ParserISO {
 		bytes[1] = (byte) ((byte) (tamEmBytes) & 0x000000ff);
 
 		char a;
-		byte aux;
+		byte aux = (byte) 0x00;
+		byte aux1 = (byte) 0x00;
 		for (int i = 0; i < tamEmBytes; i += 2) {
 			aux = (byte) 0x00;
 
 			a = hex.charAt(i);
 			aux = charToByte(a);
+			a = hex.charAt(i + 1);
+			aux1 = charToByte(a);
 
 			aux = (byte) (aux << 4);
+			aux = (byte) (aux & ((byte) 0xf0));
 
-			a = hex.charAt(i + 1);
-			aux = (byte) (aux | charToByte(a));
+			aux1 = (byte) (aux1 & ((byte) 0x0f));
 
-			bytes[i + 2] = aux;
+			bytes[i + 2] = (byte) (aux | aux1);
 		}
 	}
 

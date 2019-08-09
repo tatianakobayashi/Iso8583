@@ -12,6 +12,7 @@ import java.time.Period;
 import java.util.List;
 
 import parser.Context;
+import parser.Parser;
 import parser.ParserISO;
 
 public class POS_ServerThread extends Thread {
@@ -55,7 +56,8 @@ public class POS_ServerThread extends Thread {
 		// Lê e armazena o resto da request
 		context.setRawIsoRequest(input);
 		// Obtém request como hex
-		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
+		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));	
+		
 		// Processa request e gera mapa de campo->conteudo
 		parser.unpackIsoRequest(context.getIsoRequestHex(), context.getIsoRequestMap());
 		// Gera o map da response a partir do map da request, mas sem os campos
@@ -79,16 +81,21 @@ public class POS_ServerThread extends Thread {
 		
 		// Aloca o espaço necessario no rawResponse (hexresponse + 2)
 		context.allocRawIsoResponse((context.getIsoRequestHex().length() / 2) + 2);
+		
+		Parser o = new Parser();
+		
 		// Transforma a string response de hex para bytes
-		parser.hexToBytes(context.getIsoResponseHex(), context.getRawIsoResponse());
+//		parser.hexToBytes(context.getIsoResponseHex(), context.getRawIsoResponse());
+		byte b[] = o.textToBytes(context.getIsoResponseHex());
 		
 		System.out.println("RequestHex " + context.getIsoRequestHex());
-		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
-		
+//		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
+		System.out.println(parser.bytesToHex(b));
 		
 		// Envia response para cliente
 		try {
-			output.write(context.getRawIsoResponse());
+//			output.write(context.getRawIsoResponse());
+			output.write(b);
 			output.flush();
 		} catch (IOException e1) {
 			System.out.println("[MAIN] Failed to send response;");

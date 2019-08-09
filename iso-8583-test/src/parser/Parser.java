@@ -100,12 +100,7 @@ public class Parser {
 
 	// Recreates an unformatted String from the isoRequest HashMap
 	public String repackIsoMsg() {
-		isoRequest.remove(62);
-		isoRequest.remove(114);
-		isoRequest.remove(115);
-		isoRequest.remove(119);
-		isoRequest.remove(120);
-		isoRequest.remove(121);
+		unsetBitsForResponse();
 		
 		// This is the String to be returned
 		String packedMsg = "";
@@ -135,7 +130,7 @@ public class Parser {
 				String auxString = isoRequest.get(field);
 				int sizeOfField = auxString.length();
 				
-				if (field != 63 || field != 62) {
+				if ((field != 63 || field != 62) && dataElements.get(field).getType() != "n") {
 					auxString = asciiToHex(auxString);
 				}
 
@@ -152,7 +147,7 @@ public class Parser {
 				packedMsg += auxString;
 			} else {
 				// Fixed size fields
-				if (field == 42 || field == 37) {
+				if (/*field == 42 || field == 37*/dataElements.get(field).getType() != "n") {
 					String aux= isoRequest.get(field);
 					aux = asciiToHex(aux);
 					packedMsg += aux;
@@ -295,7 +290,7 @@ public class Parser {
 				// Cuts out the field value from the original string
 				unformattedMsg = unformattedMsg.substring(len);
 
-				if (dataElement.getCode() != 63 || dataElement.getCode() != 62) {
+				if ((dataElement.getCode() != 63 || dataElement.getCode() != 62) && dataElement.getType() != "n") {
 					// Converts from hex to ASCII text
 					auxValue = hexToASCII(auxValue);
 				}
@@ -305,7 +300,7 @@ public class Parser {
 				// Fixed size
 //				System.out.println("[getDataElements] " + dataElement);
 				// (Size * 2) when the element is a hexadecimal value
-				if (dataElement.getCode() == 42 || dataElement.getCode() == 37) {
+				if (/*dataElement.getCode() == 42 || dataElement.getCode() == 37*/dataElement.getType() != "n") {
 					// gets the field value
 					auxValue = unformattedMsg.substring(0, dataElement.getSize() * 2);
 					// cuts the field value from the original string

@@ -13,7 +13,7 @@ public class Parser {
 	private HashMap<Integer, String> isoRequest;
 	//
 	ArrayList<Integer> keysList = new ArrayList<Integer>();
-	
+
 //	private DataElementMap dataElements;
 
 	// Class builder
@@ -21,7 +21,6 @@ public class Parser {
 //		buildDataElementMap();
 		dataElements = DataElementMap.getInstance();
 	}
-
 
 	// Sets the response code(39) and changes the MTI function to a Response
 	public void setResponseCode(String responseCode) {
@@ -40,7 +39,7 @@ public class Parser {
 
 		isoRequest.put(39, responseCode);
 	}
-	
+
 	// Sets the 63th bit's value
 	public void setBit63(String status) {
 		isoRequest.put(63, status);
@@ -61,7 +60,7 @@ public class Parser {
 	public void setThreadName(String threadName) {
 		isoRequest.put(123, threadName);
 	}
-	
+
 	// Removes bits from the HashMap
 	public void unsetBitsForResponse() {
 		isoRequest.remove(62);
@@ -69,7 +68,7 @@ public class Parser {
 		isoRequest.remove(114);
 		isoRequest.remove(115);
 		isoRequest.remove(119);
-		isoRequest.remove(121);		
+		isoRequest.remove(121);
 	}
 
 	// Returns a HashMap with all the dataFields from the request
@@ -101,7 +100,7 @@ public class Parser {
 	// Recreates an unformatted String from the isoRequest HashMap
 	public String repackIsoMsg() {
 		unsetBitsForResponse();
-		
+
 		// This is the String to be returned
 		String packedMsg = "";
 
@@ -129,33 +128,31 @@ public class Parser {
 				// Variable size fields
 				String auxString = isoRequest.get(field);
 				int sizeOfField = auxString.length();
-				
+
 				if ((field != 63 || field != 62) && dataElements.get(field).getType() != "n") {
 					auxString = asciiToHex(auxString);
 				}
 
 //				System.out.println("Element: " + field);
 //				System.out.println("packDataElements maxNumberOfDigits: "  +dataElements.get(field).getMaxNumberOfDigits() + " Length: " + sizeOfField);
-				
-				if(field != 125) {
+
+				if (field != 125) {
 					packedMsg += String.format("%04d", sizeOfField);
-				}
-				else {
+				} else {
 					packedMsg += String.format("%02d", sizeOfField);
 				}
 //				packedMsg += String.format("%0" + dataElements.get(field).getMaxNumberOfDigits() + "d", sizeOfField);
 				packedMsg += auxString;
 			} else {
 				// Fixed size fields
-				if (/*field == 42 || field == 37*/dataElements.get(field).getType() != "n") {
-					String aux= isoRequest.get(field);
+				if (/* field == 42 || field == 37 */dataElements.get(field).getType() != "n") {
+					String aux = isoRequest.get(field);
 					aux = asciiToHex(aux);
 					packedMsg += aux;
+				} else {
+					packedMsg += isoRequest.get(field);
 				}
-				else {
-					packedMsg += isoRequest.get(field);	
-				}
-				
+
 			}
 		}
 		return packedMsg;
@@ -300,7 +297,7 @@ public class Parser {
 				// Fixed size
 //				System.out.println("[getDataElements] " + dataElement);
 				// (Size * 2) when the element is a hexadecimal value
-				if (/*dataElement.getCode() == 42 || dataElement.getCode() == 37*/dataElement.getType() != "n") {
+				if (/* dataElement.getCode() == 42 || dataElement.getCode() == 37 */dataElement.getType() != "n") {
 					// gets the field value
 					auxValue = unformattedMsg.substring(0, dataElement.getSize() * 2);
 					// cuts the field value from the original string
@@ -350,7 +347,7 @@ public class Parser {
 		return elementList;
 	}
 
-	// 
+	//
 	public String concatMsg() {
 		String packedMsg = "";
 		// Appending MTI to our final string
@@ -366,40 +363,45 @@ public class Parser {
 	// Converts a byte array into a Hexadecimal String
 	public String bytesToText(byte[] bytes) {
 		StringBuilder sb = new StringBuilder();
+//		System.out.println("[bytesToText] BEGIN");
 		for (byte b : bytes) {
-				sb.append(String.format("%02X", b));
+//			System.out.println(b);
+			sb.append(String.format("%02X", b));
 		}
-//		System.out.println("[bytesToText] " + sb.toString());
+//		System.out.println("[bytesToText] END");
+		System.out.println("[bytesToText] " + sb.toString());
 		return sb.toString();
 	}
 
 	// Converts a Hexadecimal String into a byte array
 	public byte[] textToBytes(String hex) {
 		int len = hex.length();
-		byte[] bytes = new byte[(len / 2) + 2];
-		
-		bytes[0] = (byte) ((byte) ((len/2)  >> 8)& 0x000000ff);
-		bytes[1] = (byte) ((byte) (len/2) & 0x000000ff);		
-		
-		byte bytes1[] = hex.getBytes(StandardCharsets.US_ASCII);
-		
-		for (int i = 2; i < len; i += 2) {
-			bytes[(i / 2) + 2] = (byte) ((bytes1[i]  << 4) | bytes1[i+1] );
-		}
-		System.out.println("[textToBytes] bytes1 len = " + bytes1.length);
-		
-		for (byte b : bytes1) {
-			System.out.println(String.format("%02X", b));
-		}
-		
-		System.out.println("[textToBytes] hex len = " + len);
-		
-		
-		for (byte b : bytes) {
-			System.out.println(String.format("%02X", b));
+
+		byte teste[] = new byte[len / 2 + 2];
+
+		teste[0] = (byte) ((byte) (len / 2 >> 8) & 0x000000ff);
+		teste[1] = (byte) (byte) (len / 2 & 0x000000ff);
+
+		int pos = 2;
+
+		for (int i = 0; i < len; i += 2) {
+
+			int end = i + 2;
+			if (end > len) {
+				end = len;
+			}
+
+			String substring = hex.substring(i, end);
+			if (substring != null || substring != ""|| substring != "\n") {
+				int c = Integer.parseInt(substring, 16);
+				teste[pos] = (byte) c;
+			}
+			pos++;
 		}
 
-		return bytes;
+//		System.out.println("[textToBytes] ending  " + bytesToText(teste));
+
+		return teste;
 	}
 
 	// Converts a hexadecimal String to an ASCII String
@@ -431,7 +433,7 @@ public class Parser {
 		}
 		return builder.toString();
 	}
-	
+
 	// Separates the values in the 63th bit
 	public List<String> parse63() {
 		String campo63 = new String(isoRequest.get(63));
@@ -440,7 +442,7 @@ public class Parser {
 		int tam;
 		int inicio = 0;
 		int fim = 2;
-		while(fim < campo63.length()) {
+		while (fim < campo63.length()) {
 			tam = Integer.parseInt(campo63.substring(inicio, fim));
 			fim += tam;
 			inicio += 2;

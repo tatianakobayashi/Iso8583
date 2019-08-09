@@ -55,7 +55,7 @@ public class ParserISO {
 	// Creates one String with all of the fields values
 	private String packDataElements(List<Integer> fieldsList, HashMap<Integer, String> responseMap) {
 		String packedMsg = "";
-		//TODO Checar campo a campo
+		// TODO Checar campo a campo
 		for (Integer field : fieldsList) {
 			if (field == 0 || field == 1)
 				continue;
@@ -119,30 +119,31 @@ public class ParserISO {
 		return bitMask;
 	}
 
-	// Cria um mapa (campo)-->(conteúdo) a partir de uma requestIso representada
+	// Cria um mapa (campo)-->(conteúdo[em bytes]) a partir de uma requestIso
+	// representada
 	// como uma String de hexadecimais
 	public void unpackIsoRequest(byte[] isoMsg, HashMap<Integer, FieldWrapper> map) {
 
 		// Obtém código MTI
-		map.put(0, isoMsgHex.substring(0, 4));
+		map.put(0, new FieldWrapper(4, Arrays.copyOfRange(isoMsg, 0, 4)));
 
 		// Obtém e interpreta o primeiro bitmap
-		String firstBitmap = isoMsgHex.substring(4, 20);
-		List<Integer> elementList = decodeBitmap(firstBitmap, 0);
+		byte[] firstBitmap = Arrays.copyOfRange(isoMsg, 4, 12);
+		List<Integer> elementList = decodeBitmap(firstBitmap, false);
 
 		// Se o segundo bitmap existe obtém e interpreta
-		int lastPosition = 20;
+		int lastPosition = 12;
 		if (elementList.get(0) == 1) {
-			String secondBitmap = isoMsgHex.substring(20, 36);
-			elementList.addAll(decodeBitmap(secondBitmap, 64));
+			byte[] secondBitmap = Arrays.copyOfRange(isoMsg, 12, 20);
+			elementList.addAll(decodeBitmap(secondBitmap, true));
 			elementList.remove(0);
-			lastPosition = 36;
+			lastPosition = 20;
 		}
 
 		System.out.println("[unpackIsoRequest]Campos ativos: " + elementList);
 
 		// Obtém o conteúdo dos campos ativos
-		String elements = isoMsgHex.substring(lastPosition);
+		byte[] elements = Arrays.copyOfRange(isoMsg, lastPosition, isoMsg.length);
 
 		// Extrai o conteúdo dos campos ativos e coloca no map
 		String auxValue;
@@ -189,26 +190,34 @@ public class ParserISO {
 	}
 
 	// Interpreta o bitmap e gera uma lista com o numero dos campos ativos
-	private List<Integer> decodeBitmap(String bitmap, Integer firstPosition) {
+	private List<Integer> decodeBitmap(byte[] bitmap, boolean isSecondBitmap) {
 		List<Integer> elementList = new ArrayList<Integer>();
-		String binary = "";
+		int aux = 0;
+		int aux2 = 0;
 
-		for (int i = 4; i <= bitmap.length(); i += 4) {
-			String sub = bitmap.substring(i - 4, i);
-			Integer decimal = Integer.parseInt(sub, 16);
-			String aux = Integer.toBinaryString(decimal);
-
-			while (aux.length() < 16) {
-				aux = "0" + aux;
-			}
-			binary += aux;
+		for (int i = 0; i < 4; i ++) {
+			aux = aux << 8;
+			aux = aux | bitmap[i];
+			aux2 = aux2 << 8;
+			aux2 = aux2 | bitmap[i+4];
 		}
 
-		for (int i = 0; i < binary.length(); i++) {
-			if (binary.charAt(i) == '1') {
-				elementList.add(i + 1 + firstPosition);
+		String binaryString = Integer.toBinaryString(aux);
+		binaryString += Integer.toBinaryString(aux2);
+		char[] binary = binaryString.toCharArray();
+		
+		int activeField = 1;
+		if (isSecondBitmap) {
+			activeField = 65;
+		} 
+		
+		for (char c: binary) {
+			if(c == '1') {
+				elementList.add(activeField);
 			}
+			activeField++;
 		}
+		
 		return elementList;
 	}
 

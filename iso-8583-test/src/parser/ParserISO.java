@@ -19,13 +19,15 @@ public class ParserISO {
 	}
 
 	// Altera MTI para newMTI
-	public void setMTI(String newMTI, HashMap<Integer, String> map) {
-		map.put(0, newMTI);
+	public void setMTI(HashMap<Integer, FieldWrapper> map) {
+		byte[] mti = {0x30, 0x38, 0x31, 0x30};
+		map.put(0, new FieldWrapper(4, mti));
 	}
 
 	// Altera código de resposta (bit 39)
-	public void setBit39(String status, HashMap<Integer, String> map) {
-		map.put(39, status);
+	public void setBit39(HashMap<Integer, String> map) {
+		status = new String(status, StandardCharsets.US_ASCII);
+		map.put(39, new FieldWrapper(4, ));
 	}
 
 	// Altera bit 63 (TODO - colocar como hex)
@@ -120,8 +122,7 @@ public class ParserISO {
 	}
 
 	// Cria um mapa (campo)-->(conteúdo[em bytes]) a partir de uma requestIso
-	// representada
-	// como uma String de hexadecimais
+	// que chega em bytes[]
 	public void unpackIsoRequest(byte[] isoMsg, HashMap<Integer, FieldWrapper> map) {
 
 		// Obtém código MTI
@@ -143,49 +144,40 @@ public class ParserISO {
 		System.out.println("[unpackIsoRequest]Campos ativos: " + elementList);
 
 		// Obtém o conteúdo dos campos ativos
-		byte[] elements = Arrays.copyOfRange(isoMsg, lastPosition, isoMsg.length);
+		byte[] conteudosISO = Arrays.copyOfRange(isoMsg, lastPosition, isoMsg.length);
 
 		// Extrai o conteúdo dos campos ativos e coloca no map
-		String auxValue;
-		Integer len, lenSize;
 		for (Integer element : elementList) {
 			DataElement dataElement = dataElements.get(element);
 
 			// Se o campo tiver tamanho variável
 			if (dataElement.getVariable()) {
+				// Número de bytes que significam tamanho
+				int numberOfDigits = dataElement.getMaxNumberOfDigits();
+				// Obtém numberOfDigits bytes que significam o tamanho desse campo
+				byte[] leadingBytes = Arrays.copyOfRange(conteudosISO, 0, numberOfDigits);
+				int len = 0;
+				// Transforma os LLL bytes em ascii e depois em int
+				String s = new String(leadingBytes, StandardCharsets.US_ASCII);
+				Integer sizeOfField = Integer.parseInt(s);
+				
+				// Obtém o conteudo do campo com sizeOfField bytes
+				byte[] conteudoCampo = Arrays.copyOfRange(conteudosISO, numberOfDigits, numberOfDigits + sizeOfField);
+				// Insere esse campo no map
+				map.put(element, new FieldWrapper(conteudoCampo.length, conteudoCampo));
+				// Corta esse campo do array de bytes original conteudosISO
+				conteudosISO = Arrays.copyOfRange(conteudosISO, numberOfDigits + sizeOfField, conteudosISO.length);
 
-				if (dataElement.getCode() != 125) {
-					len = Integer.parseInt(elements.substring(0, 4));
-					lenSize = 4;
-				} else {
-					// Field 125 has only 2 digits of field size
-					len = Integer.parseInt(elements.substring(0, 2));
-					lenSize = 2;
-				}
-				len *= 2;
-				// Cuts out the length field
-				elements = elements.substring(lenSize);
-				// Gets the field value
-				auxValue = elements.substring(0, len);
-				// Cuts out the field value from the original string
-				elements = elements.substring(len);
-
-				// Se o campo tiver tamanho fixo
+			// Se o campo tiver tamanho fixo
 			} else {
-				// (Size * 2) when the element is a hexadecimal value
-				if (dataElement.getCode() == 42 || dataElement.getCode() == 37) {
-					// gets the field value
-					auxValue = elements.substring(0, dataElement.getSize() * 2);
-					// cuts the field value from the original string
-					elements = elements.substring(dataElement.getSize() * 2);
-				} else {
-					// gets the field value
-					auxValue = elements.substring(0, dataElement.getSize());
-					// cuts the field value from the original string
-					elements = elements.substring(dataElement.getSize());
-				}
+				// Descobre tamanho fixo desse campo
+				int size = dataElement.getSize();
+				// Insere conteudo do campo no map
+				map.put(element, new FieldWrapper(size, Arrays.copyOfRange(conteudosISO, 0, size)));
+				// Retira esse campo do array conteudosISO
+				conteudosISO = Arrays.copyOfRange(conteudosISO, size, conteudosISO.length);
+
 			}
-			map.put(element, auxValue);
 		}
 	}
 
@@ -339,7 +331,7 @@ public class ParserISO {
 	// Recebe dois maps, um da request e outro da response e preenche o da response
 	// com os campos adequados (OBS: não adiciona campos como o bit 39 e nem altera
 	// o conteúdo dos campos)
-	public void makeResponseMap(HashMap<Integer, String> requestMap, HashMap<Integer, String> responseMap) {
+	public void makeResponseMap(HashMap<Integer, FieldWrapper> requestMap, HashMap<Integer, FieldWrapper> responseMap) {
 		responseMap.putAll(requestMap);
 		responseMap.remove(62);
 		responseMap.remove(114);

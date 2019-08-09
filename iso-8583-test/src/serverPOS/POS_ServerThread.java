@@ -39,11 +39,11 @@ public class POS_ServerThread extends Thread {
 			System.out.println("[MAIN] Error when creating server I/O channels");
 			return;
 		}
-		
+
 		// Instâncias de parser e contexto
 		ParserISO parser = new ParserISO();
 		Context context = new Context();
-		
+
 		// Obtém os dois primeiros bytes da request e descobre o tamanho
 		byte[] headerTamanho = new byte[2];
 		try {
@@ -52,33 +52,35 @@ public class POS_ServerThread extends Thread {
 			e1.printStackTrace();
 		}
 		context.setIsoRequestLen(parser.getReqLen(headerTamanho[0], headerTamanho[1]));
-		
+
 		// Lê e armazena o resto da request
 		context.setRawIsoRequest(input);
-		
-		// Envia response para cliente
-				try {
-					output.write(headerTamanho);
-					output.write(context.getRawIsoRequest());
-					output.flush();
-				} catch (IOException e1) {
-					System.out.println("[MAIN] Failed to send response;");
-				}
-		
-		// Obtém request como hex
-//<<<<<<< HEAD
-		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));	
-		
-//=======
-//		//context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
-//>>>>>>> branch 'master' of https://github.com/tatianakobayashi/Iso8583.git
 		// Processa request e gera mapa de campo->conteudo
 		parser.unpackIsoRequest(context.getRawIsoRequest(), context.getIsoRequestMap());
 		// Gera o map da response a partir do map da request, mas sem os campos
 		// "desnecessários"
 		parser.makeResponseMap(context.getIsoRequestMap(), context.getIsoResponseMap());
 		// Altera MTI para 0810
-		parser.setMTI("0810", context.getIsoResponseMap());
+		parser.setMTI(context.getIsoResponseMap());
+
+		// Envia response para cliente
+		try {
+			output.write(headerTamanho);
+			output.write(context.getRawIsoRequest());
+			output.flush();
+		} catch (IOException e1) {
+			System.out.println("[MAIN] Failed to send response;");
+		}
+
+		// Obtém request como hex
+//<<<<<<< HEAD
+		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
+
+//=======
+//		//context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
+//>>>>>>> branch 'master' of https://github.com/tatianakobayashi/Iso8583.git
+
+
 		// Checar bit 63, validar informações e inserir codigo de resposta
 		List<String> conteudo63 = parser.parse63(context.getIsoResponseMap());
 		String idade = conteudo63.get(0);
@@ -92,16 +94,16 @@ public class POS_ServerThread extends Thread {
 
 		// Empacota a response como hex
 		context.setIsoResponseHex(parser.packIsoResponse(context.getIsoResponseMap()));
-		
+
 		// Aloca o espaço necessario no rawResponse (hexresponse + 2)
 		context.allocRawIsoResponse((context.getIsoRequestHex().length() / 2) + 2);
-		
+
 		Parser o = new Parser();
-		
+
 		// Transforma a string response de hex para bytes
 //		parser.hexToBytes(context.getIsoResponseHex(), context.getRawIsoResponse());
 		byte b[] = o.textToBytes(context.getIsoResponseHex());
-		
+
 		System.out.println("RequestHex " + context.getIsoRequestHex());
 //<<<<<<< HEAD
 ////		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
@@ -113,10 +115,7 @@ public class POS_ServerThread extends Thread {
 //		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
 //		
 //>>>>>>> branch 'master' of https://github.com/tatianakobayashi/Iso8583.git
-		
-		
-		
-		
+
 		// Envia response para cliente
 		try {
 //			output.write(context.getRawIsoResponse());

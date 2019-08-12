@@ -67,15 +67,13 @@ public class POS_ServerThread extends Thread {
 		String idade = conteudo63.get(0);
 		if (validarIdade(idade)) {
 			parser.setBit39(true, context.getIsoResponseMap());
-			parser.setBit63("Ok!", context.getIsoResponseMap());
+			parser.setBit63("OK!", context.getIsoResponseMap());
 		} else {
 			parser.setBit39(false, context.getIsoResponseMap());
 			parser.setBit63("Falha", context.getIsoResponseMap());
 		}
 		// Empacota a response a nivel de socket
 		context.setRawIsoResponse(parser.packIsoResponse(context.getIsoResponseMap()));
-		String s = new String(context.getRawIsoResponse());
-		System.out.println(s);
 		// Envia response para cliente
 		try {
 			output.write(context.getRawIsoResponse());

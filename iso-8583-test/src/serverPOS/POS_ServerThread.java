@@ -62,22 +62,22 @@ public class POS_ServerThread extends Thread {
 		parser.makeResponseMap(context.getIsoRequestMap(), context.getIsoResponseMap());
 		// Altera MTI para 0810
 		parser.setMTI(context.getIsoResponseMap());
-<<<<<<< HEAD
-=======
 
-		// Envia response para cliente
-		try {
-			output.write(headerTamanho);
-			output.write(context.getRawIsoRequest());
-			output.flush();
-		} catch (IOException e1) {
-			System.out.println("[MAIN] Failed to send response;");
-		}
-
-		// Obtém request como hex
-		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
-
->>>>>>> refs/remotes/origin/master
+		//<<<<<<< HEAD
+//=======
+//		// Envia response para cliente
+//		try {
+//			output.write(headerTamanho);
+//			output.write(context.getRawIsoRequest());
+//			output.flush();
+//		} catch (IOException e1) {
+//			System.out.println("[MAIN] Failed to send response;");
+//		}
+//
+//		// Obtém request como hex
+//		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
+//>>>>>>> refs/remotes/origin/master
+		
 		// Checar bit 63, validar informações e inserir codigo de resposta
 		List<String> conteudo63 = parser.parse63(context.getIsoResponseMap());
 		String idade = conteudo63.get(0);
@@ -90,9 +90,9 @@ public class POS_ServerThread extends Thread {
 		}
 //<<<<<<< HEAD
 //		
-//		context.setRawIsoResponse(parser.packIsoResponse(context.getIsoResponseMap()));
+		// ???
+		// context.setRawIsoResponse(parser.packIsoResponse(context.getIsoResponseMap()));
 //=======
-//
 //		// Empacota a response como hex
 //		context.setIsoResponseHex(parser.packIsoResponse(context.getIsoResponseMap()));
 //

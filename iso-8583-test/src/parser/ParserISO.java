@@ -308,14 +308,11 @@ public class ParserISO {
 	// Interpreta o bit 63 e retorna uma lista com seus conteudos antes concatenados
 	public List<String> parse63(HashMap<Integer, FieldWrapper> map) {
 		List<String> valores = new ArrayList<String>();
-//<<<<<<< HEAD
-//		FieldWrapper campo63 = map.get(63);
-//=======
-//		FieldWrapper campo63Bytes = map.get(63);
-//		
-//		String campo63 = bytesToHex(campo63Bytes.getConteudo());
-//		
-//>>>>>>> refs/remotes/origin/master
+
+		FieldWrapper campo63Bytes = map.get(63);
+		
+		String campo63 = bytesToHex(campo63Bytes.getConteudo());
+
 		campo63 = hexToASCII(campo63);
 		if (campo63 == null)
 			return null;

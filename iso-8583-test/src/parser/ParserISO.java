@@ -166,6 +166,7 @@ public class ParserISO {
 
 		// Convert binary into hexadecimal
 		int bitMaskPosition = 0;
+		String bitMaskHex = "";
 		for (int i = 16; i <= len; i += 16) {
 			String substring = binary.substring(i - 16, i);
 			String substringHex = Integer.toHexString(Integer.parseInt(substring, 2)).toUpperCase();
@@ -174,11 +175,31 @@ public class ParserISO {
 				substringHex = "0" + substringHex;
 			}
 
-			for (char c : substringHex.toCharArray()) {
-				bitMask[bitMaskPosition] = charToByte(c);
+			bitMaskHex += substringHex;
+		}
+		System.out.println(bitMaskHex);
+		System.out.println(bitMaskHex.length());
+		
+//		for (char c : bitMaskHex.toCharArray()) {
+//			bitMask[bitMaskPosition] = charToByte(c);
+//
+//			bitMaskPosition++;
+//		}
+		
+		int bitMaskHexLen = bitMaskHex.length();
+		for (int i = 0; i < bitMaskHexLen; i += 2) {
 
-				bitMaskPosition++;
+			int end = i + 2;
+			if (end > bitMaskHexLen) {
+				end = bitMaskHexLen;
 			}
+
+			String substring = bitMaskHex.substring(i, end);
+			if (substring != null || substring != ""|| substring != "\n") {
+				int c = Integer.parseInt(substring, 16);
+				bitMask[bitMaskPosition] = (byte) c;
+			}
+			bitMaskPosition++;
 		}
 
 		return bitMask;

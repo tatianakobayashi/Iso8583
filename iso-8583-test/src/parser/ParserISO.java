@@ -20,79 +20,117 @@ public class ParserISO {
 
 	// Altera MTI para newMTI
 	public void setMTI(HashMap<Integer, FieldWrapper> map) {
-		byte[] mti = {0x30, 0x38, 0x31, 0x30};
+		byte[] mti = { 0x30, 0x38, 0x31, 0x30 };
 		map.put(0, new FieldWrapper(4, mti));
 	}
 
 	// Altera código de resposta (bit 39)
 	public void setBit39(Boolean success, HashMap<Integer, FieldWrapper> map) {
-		if(success) {
-			byte[] response = {0x30, 0x30};
+		if (success) {
+			byte[] response = { 0x30, 0x30 };
+			map.put(39, new FieldWrapper(4, response));
+		} else {
+			byte[] response = { 0x30, 0x31 };
 			map.put(39, new FieldWrapper(4, response));
 		}
-		else {
-			byte[] response = {0x30, 0x31};
-			map.put(39, new FieldWrapper(4, response));
-		}
-		
+
 //		status = new String(status, StandardCharsets.US_ASCII);
-		
+
 	}
 
 	// Altera bit 63 (TODO - colocar como hex)
 	public void setBit63(String status, HashMap<Integer, FieldWrapper> map) {
-		
+
 		byte[] statusBytes = status.getBytes(StandardCharsets.US_ASCII);
 		map.put(63, new FieldWrapper(statusBytes.length, statusBytes));
 	}
 
 	// Cria uma String em hex a partir do map da response
 	public byte[] packIsoResponse(HashMap<Integer, FieldWrapper> responseMap) {
-		// Array de bytes a ser retornado por esse método (Esse array foi criado com overhead, 
-		// precisamos manter o número de bytes preenchidos para criar um array novo com o tamanho
+		// Array de bytes a ser retornado por esse método (Esse array foi criado com
+		// overhead,
+		// precisamos manter o número de bytes preenchidos para criar um array novo com
+		// o tamanho
 		// correto a ser enviado)
-		byte[] packedIsoResponse = new byte[5000];
+//		byte[] packedIsoResponse = new byte[5000];
 		// Preenchendo MTI ([0][1][2][3])
-		byte[] auxMTI = responseMap.get(0).getConteudo(); 
-		for(int i = 0; i < 4; i ++) {
-			packedIsoResponse[i] = auxMTI[i];
-		}
+		byte[] auxMTI = responseMap.get(0).getConteudo();
+//		for (int i = 0; i < 4; i++) {
+//			packedIsoResponse[i] = auxMTI[i];
+//		}
 		// Criando BitMap
 		List<Integer> keys = new ArrayList<Integer>();
 		keys.addAll(responseMap.keySet());
 		keys.sort(null);
-		packedMsg += createBitmap(keys);
+
+		byte[] bitmap = createBitmap(keys);
+
+//		for (int i = 0; i < bitmap.length; i++) {
+//			packedIsoResponse[i + 4] = bitmap[i];
+//		}
+
 		// Adding data elements
-		packedMsg += packDataElements(keys, responseMap);
+		byte[] packedDataElements = packDataElements(keys, responseMap);
+		
+//		int pos = packedIsoResponse.length;
+//		for (byte b : packedDataElements) {
+//			packedIsoResponse[pos] = b;
+//			pos++;
+//		}
+		
+		byte[] packedIsoResponse = new byte[4 + bitmap.length + packedDataElements.length];
+		// Copiando MTI
+		for (int i = 0; i < 4; i++) {
+			packedIsoResponse[i] = auxMTI[i];
+		}
+		// Copiando bitmap
+		for (int i = 0; i < bitmap.length; i++) {
+			packedIsoResponse[i + 4] = bitmap[i];
+		}
+		// Copiando dataElements
+		int pos = 4 + bitmap.length;
+		for (byte b : packedDataElements) {
+			packedIsoResponse[pos] = b;
+			pos++;
+		}
+		
 		// Returning packed Iso
-		return packedMsg;
+		return packedIsoResponse;
 	}
 
 	// Creates one String with all of the fields values
-	private String packDataElements(List<Integer> fieldsList, HashMap<Integer, String> responseMap) {
-		String packedMsg = "";
+	private byte[] packDataElements(List<Integer> fieldsList, HashMap<Integer, FieldWrapper> responseMap) {
+		byte[] packedMsg = new byte[5000];
+		int packedMsgPosition = 0;
 		// TODO Checar campo a campo
 		for (Integer field : fieldsList) {
 			if (field == 0 || field == 1)
 				continue;
+			FieldWrapper fieldWrapper = responseMap.get(field);
 			if (dataElements.get(field).getVariable()) {
 				// Variable size fields
-				String auxString = responseMap.get(field);
-				int sizeOfField = auxString.length() / 2;
+				int sizeOfField = fieldWrapper.getTam() / 2;
+
+				// Format size into String
+				String fieldSizeString;
 				if (field != 125) {
-					packedMsg += String.format("%04d", sizeOfField);
+					fieldSizeString = String.format("%04d", sizeOfField);
 				} else {
-					packedMsg += String.format("%02d", sizeOfField);
+					fieldSizeString = String.format("%02d", sizeOfField);
 				}
-				packedMsg += auxString;
-			} else {
-				// Fixed size fields
-				if (field == 42 || field == 37) {
-					String aux = responseMap.get(field);
-					packedMsg += aux;
-				} else {
-					packedMsg += responseMap.get(field);
+
+				// Copy field size into packedMessage
+				byte[] fieldSizeBytes = fieldSizeString.getBytes(StandardCharsets.US_ASCII);
+				for (byte b : fieldSizeBytes) {
+					packedMsg[packedMsgPosition] = b;
+					packedMsgPosition++;
 				}
+			}
+			// Copy field value into packed message
+
+			for (byte b : fieldWrapper.getConteudo()) {
+				packedMsg[packedMsgPosition] = b;
+				packedMsgPosition++;
 			}
 		}
 		return packedMsg;
@@ -103,15 +141,18 @@ public class ParserISO {
 		Integer bitMaskSize = keysList.get(keysList.size() - 1);
 		byte[] bitMask;
 		int len;
-		
+
+		// Set bitmask size
 		if (bitMaskSize > 64) {
 			len = 128;
 			bitMask = new byte[16];
-			
+
 		} else {
 			len = 64;
+			bitMask = new byte[8];
 		}
 
+		// Create Binary String
 		char initialMask[] = new char[len];
 		Arrays.fill(initialMask, '0');
 		for (Integer pos : keysList) {
@@ -123,15 +164,21 @@ public class ParserISO {
 		}
 		String binary = new String(initialMask);
 
+		// Convert binary into hexadecimal
+		int bitMaskPosition = 0;
 		for (int i = 16; i <= len; i += 16) {
-			String sub = binary.substring(i - 16, i);
-			String subBin = Integer.toHexString(Integer.parseInt(sub, 2)).toUpperCase();
+			String substring = binary.substring(i - 16, i);
+			String substringHex = Integer.toHexString(Integer.parseInt(substring, 2)).toUpperCase();
 
-			while (subBin.length() < 4) {
-				subBin = "0" + subBin;
+			while (substringHex.length() < 4) {
+				substringHex = "0" + substringHex;
 			}
 
-			bitMask += subBin;
+			for (char c : substringHex.toCharArray()) {
+				bitMask[bitMaskPosition] = charToByte(c);
+
+				bitMaskPosition++;
+			}
 		}
 
 		return bitMask;
@@ -176,7 +223,7 @@ public class ParserISO {
 				// Transforma os LLL bytes em ascii e depois em int
 				String s = new String(leadingBytes, StandardCharsets.US_ASCII);
 				Integer sizeOfField = Integer.parseInt(s);
-				
+
 				// Obtém o conteudo do campo com sizeOfField bytes
 				byte[] conteudoCampo = Arrays.copyOfRange(conteudosISO, numberOfDigits, numberOfDigits + sizeOfField);
 				// Insere esse campo no map
@@ -184,7 +231,7 @@ public class ParserISO {
 				// Corta esse campo do array de bytes original conteudosISO
 				conteudosISO = Arrays.copyOfRange(conteudosISO, numberOfDigits + sizeOfField, conteudosISO.length);
 
-			// Se o campo tiver tamanho fixo
+				// Se o campo tiver tamanho fixo
 			} else {
 				// Descobre tamanho fixo desse campo
 				int size = dataElement.getSize();
@@ -203,29 +250,29 @@ public class ParserISO {
 		int aux = 0;
 		int aux2 = 0;
 
-		for (int i = 0; i < 4; i ++) {
+		for (int i = 0; i < 4; i++) {
 			aux = aux << 8;
 			aux = aux | bitmap[i];
 			aux2 = aux2 << 8;
-			aux2 = aux2 | bitmap[i+4];
+			aux2 = aux2 | bitmap[i + 4];
 		}
 
 		String binaryString = Integer.toBinaryString(aux);
 		binaryString += Integer.toBinaryString(aux2);
 		char[] binary = binaryString.toCharArray();
-		
+
 		int activeField = 1;
 		if (isSecondBitmap) {
 			activeField = 65;
-		} 
-		
-		for (char c: binary) {
-			if(c == '1') {
+		}
+
+		for (char c : binary) {
+			if (c == '1') {
 				elementList.add(activeField);
 			}
 			activeField++;
 		}
-		
+
 		return elementList;
 	}
 
@@ -310,7 +357,7 @@ public class ParserISO {
 		List<String> valores = new ArrayList<String>();
 
 		FieldWrapper campo63Bytes = map.get(63);
-		
+
 		String campo63 = bytesToHex(campo63Bytes.getConteudo());
 
 		campo63 = hexToASCII(campo63);

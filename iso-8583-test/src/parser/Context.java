@@ -2,6 +2,7 @@ package parser;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 // Essa classe armazena uma request ISO e sua response, além de informações sobre ambas
@@ -85,6 +86,10 @@ public class Context {
 		String responseFormatada = new String("TODO");
 		// TODO
 		return responseFormatada;
+	}
+
+	public void setRawIsoResponse(byte[] packIsoResponse) {
+		this.rawIsoResponse = Arrays.copyOf(packIsoResponse, packIsoResponse.length);		
 	}
 
 }

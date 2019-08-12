@@ -187,21 +187,20 @@ public class ParserISO {
 	// Cria um mapa (campo)-->(conteúdo[em bytes]) a partir de uma requestIso
 	// que chega em bytes[]
 	public void unpackIsoRequest(byte[] isoMsg, HashMap<Integer, FieldWrapper> map) {
-
+		System.out.println("Full request: " + bytesToHex(isoMsg));
 		// Obtém código MTI
-		map.put(0, new FieldWrapper(4, Arrays.copyOfRange(isoMsg, 0, 4)));
-
+		map.put(0, new FieldWrapper(2, Arrays.copyOfRange(isoMsg, 0, 2)));
+		
 		// Obtém e interpreta o primeiro bitmap
-		byte[] firstBitmap = Arrays.copyOfRange(isoMsg, 4, 12);
+		byte[] firstBitmap = Arrays.copyOfRange(isoMsg, 2, 10);
 		List<Integer> elementList = decodeBitmap(firstBitmap, false);
-
 		// Se o segundo bitmap existe obtém e interpreta
-		int lastPosition = 12;
+		int lastPosition = 10;
 		if (elementList.get(0) == 1) {
-			byte[] secondBitmap = Arrays.copyOfRange(isoMsg, 12, 20);
+			byte[] secondBitmap = Arrays.copyOfRange(isoMsg, 10, 18);
 			elementList.addAll(decodeBitmap(secondBitmap, true));
 			elementList.remove(0);
-			lastPosition = 20;
+			lastPosition = 18;
 		}
 
 		System.out.println("[unpackIsoRequest]Campos ativos: " + elementList);
@@ -215,28 +214,42 @@ public class ParserISO {
 
 			// Se o campo tiver tamanho variável
 			if (dataElement.getVariable()) {
-				// Número de bytes que significam tamanho
-				int numberOfDigits = dataElement.getMaxNumberOfDigits();
-				// Obtém numberOfDigits bytes que significam o tamanho desse campo
-				byte[] leadingBytes = Arrays.copyOfRange(conteudosISO, 0, numberOfDigits);
-				int len = 0;
-				// Transforma os LLL bytes em ascii e depois em int
-				String s = new String(leadingBytes, StandardCharsets.US_ASCII);
+				// Obtém dois bytes que significam tamanho (1 byte no caso do campo 125 (?)) e retira 
+				// esses bytes do buffer
+				byte[] leadingBytes;
+				if(dataElement.getCode() == 125) {
+					 leadingBytes = Arrays.copyOfRange(conteudosISO, 0, 1);
+					 conteudosISO = Arrays.copyOfRange(conteudosISO, 0, 1);
+				}
+				else {
+					leadingBytes = Arrays.copyOfRange(conteudosISO, 0, 2);
+					conteudosISO = Arrays.copyOfRange(conteudosISO, 0, 2);
+				}
+				// Transforma os bytes referentes a tamanho para int
+				String s = new String(bytesToHex(leadingBytes));
 				Integer sizeOfField = Integer.parseInt(s);
 
 				// Obtém o conteudo do campo com sizeOfField bytes
-				byte[] conteudoCampo = Arrays.copyOfRange(conteudosISO, numberOfDigits, numberOfDigits + sizeOfField);
+				byte[] conteudoCampo = Arrays.copyOfRange(conteudosISO, 0, sizeOfField);
 				// Insere esse campo no map
+				System.out.println("colocando campo " + element + ": " + bytesToHex(conteudoCampo));
 				map.put(element, new FieldWrapper(conteudoCampo.length, conteudoCampo));
 				// Corta esse campo do array de bytes original conteudosISO
-				conteudosISO = Arrays.copyOfRange(conteudosISO, numberOfDigits + sizeOfField, conteudosISO.length);
+				conteudosISO = Arrays.copyOfRange(conteudosISO, sizeOfField, conteudosISO.length);
 
 				// Se o campo tiver tamanho fixo
 			} else {
 				// Descobre tamanho fixo desse campo
-				int size = dataElement.getSize();
+				int size = 0;
+				if(dataElement.getType() == "n") {
+					size = dataElement.getSize() / 2;
+				}
+				else 
+					size = dataElement.getSize();
+				
 				// Insere conteudo do campo no map
 				map.put(element, new FieldWrapper(size, Arrays.copyOfRange(conteudosISO, 0, size)));
+				System.out.println("colocando campo " + element + ": " + bytesToHex(Arrays.copyOfRange(conteudosISO, 0, size)));
 				// Retira esse campo do array conteudosISO
 				conteudosISO = Arrays.copyOfRange(conteudosISO, size, conteudosISO.length);
 
@@ -247,20 +260,20 @@ public class ParserISO {
 	// Interpreta o bitmap e gera uma lista com o numero dos campos ativos
 	private List<Integer> decodeBitmap(byte[] bitmap, boolean isSecondBitmap) {
 		List<Integer> elementList = new ArrayList<Integer>();
-		int aux = 0;
-		int aux2 = 0;
-
-		for (int i = 0; i < 4; i++) {
-			aux = aux << 8;
-			aux = aux | bitmap[i];
-			aux2 = aux2 << 8;
-			aux2 = aux2 | bitmap[i + 4];
+		String binaryString = "";
+		
+		for (int i = 0; i < 8; i++) {
+			if((bitmap[i] & (byte)0x80) != (byte)0x00) binaryString+= "1"; else binaryString+= "0";
+			if((bitmap[i] & (byte)0x40) != (byte)0x00) binaryString+= "1"; else binaryString+= "0";
+			if((bitmap[i] & (byte)0x20) != (byte)0x00) binaryString+= "1"; else binaryString+= "0";
+			if((bitmap[i] & (byte)0x10) != (byte)0x00) binaryString+= "1"; else binaryString+= "0";
+			if((bitmap[i] & (byte)0x08) != (byte)0x00) binaryString+= "1"; else binaryString+= "0";
+			if((bitmap[i] & (byte)0x04) != (byte)0x00) binaryString+= "1"; else binaryString+= "0";
+			if((bitmap[i] & (byte)0x02) != (byte)0x00) binaryString+= "1"; else binaryString+= "0";
+			if((bitmap[i] & (byte)0x01) != (byte)0x00) binaryString+= "1"; else binaryString+= "0";
 		}
-
-		String binaryString = Integer.toBinaryString(aux);
-		binaryString += Integer.toBinaryString(aux2);
+		
 		char[] binary = binaryString.toCharArray();
-
 		int activeField = 1;
 		if (isSecondBitmap) {
 			activeField = 65;
@@ -272,7 +285,6 @@ public class ParserISO {
 			}
 			activeField++;
 		}
-
 		return elementList;
 	}
 

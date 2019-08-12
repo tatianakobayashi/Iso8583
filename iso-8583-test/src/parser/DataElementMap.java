@@ -67,8 +67,8 @@ public final class DataElementMap {
 			dataElements.put(59, new DataElement(59, 999, true, 3, "ans"));
 			dataElements.put(60, new DataElement(60, 999, true, 3, "ans"));
 			dataElements.put(61, new DataElement(61, 999, true, 3, "ans"));
-			dataElements.put(62, new DataElement(62, 999, true, 3, "ans"));
-			dataElements.put(63, new DataElement(63, 999, true, 3, "ans"));
+			dataElements.put(62, new DataElement(62, 999, true, 3, "b"));
+			dataElements.put(63, new DataElement(63, 999, true, 3, "b"));
 			dataElements.put(64, new DataElement(64, 64, false, 0, "b"));
 			dataElements.put(65, new DataElement(65, 1, false, 0, "b"));
 			dataElements.put(66, new DataElement(66, 1, false, 0, "n"));

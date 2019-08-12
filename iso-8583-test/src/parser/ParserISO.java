@@ -219,15 +219,17 @@ public class ParserISO {
 				byte[] leadingBytes;
 				if(dataElement.getCode() == 125) {
 					 leadingBytes = Arrays.copyOfRange(conteudosISO, 0, 1);
-					 conteudosISO = Arrays.copyOfRange(conteudosISO, 0, 1);
+					 conteudosISO = Arrays.copyOfRange(conteudosISO, 1, conteudosISO.length);
 				}
 				else {
 					leadingBytes = Arrays.copyOfRange(conteudosISO, 0, 2);
-					conteudosISO = Arrays.copyOfRange(conteudosISO, 0, 2);
+					conteudosISO = Arrays.copyOfRange(conteudosISO, 2, conteudosISO.length);
 				}
 				// Transforma os bytes referentes a tamanho para int
 				String s = new String(bytesToHex(leadingBytes));
 				Integer sizeOfField = Integer.parseInt(s);
+				//if(dataElement.getType() == "b")
+					//sizeOfField = sizeOfField * 2;
 
 				// Obtém o conteudo do campo com sizeOfField bytes
 				byte[] conteudoCampo = Arrays.copyOfRange(conteudosISO, 0, sizeOfField);

@@ -73,13 +73,7 @@ public class POS_ServerThread extends Thread {
 		}
 
 		// Obtém request como hex
-//<<<<<<< HEAD
 		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
-
-//=======
-//		//context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
-//>>>>>>> branch 'master' of https://github.com/tatianakobayashi/Iso8583.git
-
 
 		// Checar bit 63, validar informações e inserir codigo de resposta
 		List<String> conteudo63 = parser.parse63(context.getIsoResponseMap());
@@ -105,16 +99,6 @@ public class POS_ServerThread extends Thread {
 		byte b[] = o.textToBytes(context.getIsoResponseHex());
 
 		System.out.println("RequestHex " + context.getIsoRequestHex());
-//<<<<<<< HEAD
-////		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
-//		System.out.println(parser.bytesToHex(b));
-//=======
-//		System.out.println(parser.packIsoResponse(context.getIsoResponseMap()));
-//		
-//		
-//		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
-//		
-//>>>>>>> branch 'master' of https://github.com/tatianakobayashi/Iso8583.git
 
 		// Envia response para cliente
 		try {

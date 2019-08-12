@@ -85,10 +85,10 @@ public class POS_ServerThread extends Thread {
 		List<String> conteudo63 = parser.parse63(context.getIsoResponseMap());
 		String idade = conteudo63.get(0);
 		if (validarIdade(idade)) {
-			parser.setBit39("00", context.getIsoResponseMap());
+			parser.setBit39(true, context.getIsoResponseMap());
 			parser.setBit63("Ok!", context.getIsoResponseMap());
 		} else {
-			parser.setBit39("01", context.getIsoResponseMap());
+			parser.setBit39(false, context.getIsoResponseMap());
 			parser.setBit63("Falha", context.getIsoResponseMap());
 		}
 

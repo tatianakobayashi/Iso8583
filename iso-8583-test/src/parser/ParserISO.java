@@ -36,14 +36,17 @@ public class ParserISO {
 	}
 
 	// Cria uma String em hex a partir do map da response
-	public String packIsoResponse(HashMap<Integer, String> responseMap) {
-
-		// This is the String to be returned
-		String packedMsg = "";
-
-		// Appending MTI to our final string
-		packedMsg += responseMap.get(0);
-		// Creating bitMap
+	public byte[] packIsoResponse(HashMap<Integer, FieldWrapper> responseMap) {
+		// Array de bytes a ser retornado por esse método (Esse array foi criado com overhead, 
+		// precisamos manter o número de bytes preenchidos para criar um array novo com o tamanho
+		// correto a ser enviado)
+		byte[] packedIsoResponse = new byte[5000];
+		// Preenchendo MTI ([0][1][2][3])
+		byte[] auxMTI = responseMap.get(0).getConteudo(); 
+		for(int i = 0; i < 4; i ++) {
+			packedIsoResponse[i] = auxMTI[i];
+		}
+		// Criando BitMap
 		List<Integer> keys = new ArrayList<Integer>();
 		keys.addAll(responseMap.keySet());
 		keys.sort(null);
@@ -85,13 +88,15 @@ public class ParserISO {
 	}
 
 	// Cria o bitmap para a response
-	private String createBitmap(List<Integer> keysList) {
-		String bitMask = "";
+	private byte[] createBitmap(List<Integer> keysList) {
 		Integer bitMaskSize = keysList.get(keysList.size() - 1);
-
+		byte[] bitMask;
 		int len;
+		
 		if (bitMaskSize > 64) {
 			len = 128;
+			bitMask = new byte[16];
+			
 		} else {
 			len = 64;
 		}
@@ -290,9 +295,9 @@ public class ParserISO {
 	}
 
 	// Interpreta o bit 63 e retorna uma lista com seus conteudos antes concatenados
-	public List<String> parse63(HashMap<Integer, String> map) {
+	public List<String> parse63(HashMap<Integer, FieldWrapper> map) {
 		List<String> valores = new ArrayList<String>();
-		String campo63 = map.get(63);
+		FieldWrapper campo63 = map.get(63);
 		campo63 = hexToASCII(campo63);
 		if (campo63 == null)
 			return null;

@@ -62,25 +62,6 @@ public class POS_ServerThread extends Thread {
 		parser.makeResponseMap(context.getIsoRequestMap(), context.getIsoResponseMap());
 		// Altera MTI para 0810
 		parser.setMTI(context.getIsoResponseMap());
-
-		// Envia response para cliente
-		try {
-			output.write(headerTamanho);
-			output.write(context.getRawIsoRequest());
-			output.flush();
-		} catch (IOException e1) {
-			System.out.println("[MAIN] Failed to send response;");
-		}
-
-		// Obtém request como hex
-//<<<<<<< HEAD
-		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
-
-//=======
-//		//context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
-//>>>>>>> branch 'master' of https://github.com/tatianakobayashi/Iso8583.git
-
-
 		// Checar bit 63, validar informações e inserir codigo de resposta
 		List<String> conteudo63 = parser.parse63(context.getIsoResponseMap());
 		String idade = conteudo63.get(0);
@@ -91,35 +72,12 @@ public class POS_ServerThread extends Thread {
 			parser.setBit39("01", context.getIsoResponseMap());
 			parser.setBit63("Falha", context.getIsoResponseMap());
 		}
-
-		// Empacota a response como hex
-		context.setIsoResponseHex(parser.packIsoResponse(context.getIsoResponseMap()));
-
-		// Aloca o espaço necessario no rawResponse (hexresponse + 2)
-		context.allocRawIsoResponse((context.getIsoRequestHex().length() / 2) + 2);
-
-		Parser o = new Parser();
-
-		// Transforma a string response de hex para bytes
-//		parser.hexToBytes(context.getIsoResponseHex(), context.getRawIsoResponse());
-		byte b[] = o.textToBytes(context.getIsoResponseHex());
-
-		System.out.println("RequestHex " + context.getIsoRequestHex());
-//<<<<<<< HEAD
-////		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
-//		System.out.println(parser.bytesToHex(b));
-//=======
-//		System.out.println(parser.packIsoResponse(context.getIsoResponseMap()));
-//		
-//		
-//		System.out.println(parser.bytesToHex(context.getRawIsoResponse()));
-//		
-//>>>>>>> branch 'master' of https://github.com/tatianakobayashi/Iso8583.git
+		
+		context.setRawIsoResponse(parser.packIsoResponse(context.getIsoResponseMap()));
 
 		// Envia response para cliente
 		try {
-//			output.write(context.getRawIsoResponse());
-			output.write(b);
+			output.write(context.getRawIsoResponse());
 			output.flush();
 		} catch (IOException e1) {
 			System.out.println("[MAIN] Failed to send response;");
@@ -149,6 +107,5 @@ public class POS_ServerThread extends Thread {
 		} catch (DateTimeException e) {
 			return false;
 		}
-
 	}
 }

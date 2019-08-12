@@ -25,14 +25,25 @@ public class ParserISO {
 	}
 
 	// Altera código de resposta (bit 39)
-	public void setBit39(HashMap<Integer, String> map) {
-		status = new String(status, StandardCharsets.US_ASCII);
-		map.put(39, new FieldWrapper(4, ));
+	public void setBit39(Boolean success, HashMap<Integer, FieldWrapper> map) {
+		if(success) {
+			byte[] response = {0x30, 0x30};
+			map.put(39, new FieldWrapper(4, response));
+		}
+		else {
+			byte[] response = {0x30, 0x31};
+			map.put(39, new FieldWrapper(4, response));
+		}
+		
+//		status = new String(status, StandardCharsets.US_ASCII);
+		
 	}
 
 	// Altera bit 63 (TODO - colocar como hex)
-	public void setBit63(String status, HashMap<Integer, String> map) {
-		map.put(63, bytesToHex(status.getBytes()));
+	public void setBit63(String status, HashMap<Integer, FieldWrapper> map) {
+		
+		byte[] statusBytes = status.getBytes(StandardCharsets.US_ASCII);
+		map.put(63, new FieldWrapper(statusBytes.length, statusBytes));
 	}
 
 	// Cria uma String em hex a partir do map da response
@@ -297,7 +308,14 @@ public class ParserISO {
 	// Interpreta o bit 63 e retorna uma lista com seus conteudos antes concatenados
 	public List<String> parse63(HashMap<Integer, FieldWrapper> map) {
 		List<String> valores = new ArrayList<String>();
-		FieldWrapper campo63 = map.get(63);
+//<<<<<<< HEAD
+//		FieldWrapper campo63 = map.get(63);
+//=======
+//		FieldWrapper campo63Bytes = map.get(63);
+//		
+//		String campo63 = bytesToHex(campo63Bytes.getConteudo());
+//		
+//>>>>>>> refs/remotes/origin/master
 		campo63 = hexToASCII(campo63);
 		if (campo63 == null)
 			return null;

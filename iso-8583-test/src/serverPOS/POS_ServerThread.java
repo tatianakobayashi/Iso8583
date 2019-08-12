@@ -62,18 +62,51 @@ public class POS_ServerThread extends Thread {
 		parser.makeResponseMap(context.getIsoRequestMap(), context.getIsoResponseMap());
 		// Altera MTI para 0810
 		parser.setMTI(context.getIsoResponseMap());
+<<<<<<< HEAD
+=======
+
+		// Envia response para cliente
+		try {
+			output.write(headerTamanho);
+			output.write(context.getRawIsoRequest());
+			output.flush();
+		} catch (IOException e1) {
+			System.out.println("[MAIN] Failed to send response;");
+		}
+
+		// Obtém request como hex
+		context.setIsoRequestHex(parser.bytesToHex(context.getRawIsoRequest()));
+
+>>>>>>> refs/remotes/origin/master
 		// Checar bit 63, validar informações e inserir codigo de resposta
 		List<String> conteudo63 = parser.parse63(context.getIsoResponseMap());
 		String idade = conteudo63.get(0);
 		if (validarIdade(idade)) {
-			parser.setBit39("00", context.getIsoResponseMap());
+			parser.setBit39(true, context.getIsoResponseMap());
 			parser.setBit63("Ok!", context.getIsoResponseMap());
 		} else {
-			parser.setBit39("01", context.getIsoResponseMap());
+			parser.setBit39(false, context.getIsoResponseMap());
 			parser.setBit63("Falha", context.getIsoResponseMap());
 		}
-		
-		context.setRawIsoResponse(parser.packIsoResponse(context.getIsoResponseMap()));
+//<<<<<<< HEAD
+//		
+//		context.setRawIsoResponse(parser.packIsoResponse(context.getIsoResponseMap()));
+//=======
+//
+//		// Empacota a response como hex
+//		context.setIsoResponseHex(parser.packIsoResponse(context.getIsoResponseMap()));
+//
+//		// Aloca o espaço necessario no rawResponse (hexresponse + 2)
+//		context.allocRawIsoResponse((context.getIsoRequestHex().length() / 2) + 2);
+//
+//		Parser o = new Parser();
+//
+//		// Transforma a string response de hex para bytes
+////		parser.hexToBytes(context.getIsoResponseHex(), context.getRawIsoResponse());
+//		byte b[] = o.textToBytes(context.getIsoResponseHex());
+//
+//		System.out.println("RequestHex " + context.getIsoRequestHex());
+//>>>>>>> refs/remotes/origin/master
 
 		// Envia response para cliente
 		try {

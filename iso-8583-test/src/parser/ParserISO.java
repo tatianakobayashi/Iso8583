@@ -39,9 +39,10 @@ public class ParserISO {
 	public void setBit63(String status, HashMap<Integer, FieldWrapper> map) {
 		byte[] failure = { 0x46, 0x41, 0x4c, 0x48, 0x41 };
 		byte[] success = { 0x4f, 0x4b, 0x21 };
-
+		String sucesso = "\\f2\\a1OK!\\e";
+		
 		if (status.equals("OK!")) {
-			map.put(63, new FieldWrapper(success.length, success));
+			map.put(63, new FieldWrapper(sucesso.length(), sucesso.getBytes()));
 		} else
 			map.put(63, new FieldWrapper(failure.length, failure));
 	}
@@ -59,11 +60,23 @@ public class ParserISO {
 		// Adding data elements
 		byte[] packedDataElements = packDataElements(keys, responseMap);
 		// System.out.println("[Pack] DataElements : " + bytesToHex(auxMTI));
-		int tam = 2 + 2 + bitmap.length + packedDataElements.length;
-		byte[] packedIsoResponse = new byte[tam];
-		// Colocando tamanho nos dois primeiros bytes
-		packedIsoResponse[0] = (byte) (tam >> 8);
-		packedIsoResponse[1] = (byte) (tam & 0x000000ff);
+		int tam = 2 + bitmap.length + packedDataElements.length;
+		//String sizeAsString = String.format("%04d", tam);
+		//System.out.println("tamtotal " + sizeAsString);
+		byte[] packedIsoResponse = new byte[tam + 2];
+		packedIsoResponse[0] = (byte)(tam >> 8);
+		packedIsoResponse[1] = (byte) (tam);
+//		// Colocando tamanho nos dois primeiros bytes		
+//		byte b = charToByte(sizeAsString.charAt(0));
+//		b = (byte) (b << 4);
+//		b = (byte) (b | charToByte(sizeAsString.charAt(1)));
+//		packedIsoResponse[0] = b;
+//		
+//		b = charToByte(sizeAsString.charAt(2));
+//		b = (byte) (b << 4);
+//		b = (byte) (b | charToByte(sizeAsString.charAt(3)));
+//		packedIsoResponse[1] = b;
+	
 		// Copiando MTI
 		for (int i = 2; i < 4; i++) {
 			packedIsoResponse[i] = auxMTI[i - 2];
@@ -74,8 +87,8 @@ public class ParserISO {
 		}
 		// Copiando dataElements
 		int pos = 4 + bitmap.length;
-		for (byte b : packedDataElements) {
-			packedIsoResponse[pos] = b;
+		for (byte b1 : packedDataElements) {
+			packedIsoResponse[pos] = b1;
 			pos++;
 		}
 

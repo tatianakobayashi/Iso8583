@@ -40,7 +40,7 @@ public class ParserISO {
 		byte[] failure = { 0x46, 0x41, 0x4c, 0x48, 0x41 };
 		byte[] success = { 0x4f, 0x4b, 0x21 };
 		String sucesso = "\\f2\\a1OK!\\e";
-		
+
 		if (status.equals("OK!")) {
 			map.put(63, new FieldWrapper(sucesso.length(), sucesso.getBytes()));
 		} else
@@ -59,24 +59,14 @@ public class ParserISO {
 		byte[] bitmap = createBitmap(keys);
 		// Adding data elements
 		byte[] packedDataElements = packDataElements(keys, responseMap);
-		// System.out.println("[Pack] DataElements : " + bytesToHex(auxMTI));
+
 		int tam = 2 + bitmap.length + packedDataElements.length;
-		//String sizeAsString = String.format("%04d", tam);
-		//System.out.println("tamtotal " + sizeAsString);
+
+		// Colocando tamanho nos dois primeiros bytes
 		byte[] packedIsoResponse = new byte[tam + 2];
-		packedIsoResponse[0] = (byte)(tam >> 8);
+		packedIsoResponse[0] = (byte) (tam >> 8);
 		packedIsoResponse[1] = (byte) (tam);
-//		// Colocando tamanho nos dois primeiros bytes		
-//		byte b = charToByte(sizeAsString.charAt(0));
-//		b = (byte) (b << 4);
-//		b = (byte) (b | charToByte(sizeAsString.charAt(1)));
-//		packedIsoResponse[0] = b;
-//		
-//		b = charToByte(sizeAsString.charAt(2));
-//		b = (byte) (b << 4);
-//		b = (byte) (b | charToByte(sizeAsString.charAt(3)));
-//		packedIsoResponse[1] = b;
-	
+
 		// Copiando MTI
 		for (int i = 2; i < 4; i++) {
 			packedIsoResponse[i] = auxMTI[i - 2];
@@ -91,9 +81,7 @@ public class ParserISO {
 			packedIsoResponse[pos] = b1;
 			pos++;
 		}
-
 		// Returning packed Iso
-		System.out.println("Packed Response: " + bytesToHex(packedIsoResponse));
 		return packedIsoResponse;
 	}
 
@@ -115,31 +103,28 @@ public class ParserISO {
 					byte b = charToByte(sizeAsString.charAt(2));
 					b = (byte) (b << 4);
 					b = (byte) (b | charToByte(sizeAsString.charAt(3)));
-					byte[] auxArray = {b};
+					byte[] auxArray = { b };
 					packedMsg[packedMsgPosition] = b;
 					packedMsgPosition++;
-					System.out.println("125 size: " + bytesToHex(auxArray));
 				} else {
 					byte[] auxArray = new byte[2];
-					
+
 					byte b = charToByte(sizeAsString.charAt(0));
 					b = (byte) (b << 4);
 					b = (byte) (b | charToByte(sizeAsString.charAt(1)));
 					auxArray[0] = b;
-					
+
 					b = charToByte(sizeAsString.charAt(2));
 					b = (byte) (b << 4);
 					b = (byte) (b | charToByte(sizeAsString.charAt(3)));
 					auxArray[1] = b;
-					
+
 					packedMsg[packedMsgPosition] = auxArray[0];
 					packedMsgPosition++;
 					packedMsg[packedMsgPosition] = auxArray[1];
 					packedMsgPosition++;
-					System.out.println(field + " size: " + bytesToHex(auxArray));
 				}
 			}
-			System.out.println("Campo " + field + ": " + bytesToHex(fieldWrapper.getConteudo()));
 			// Concatena conteudo do campo
 			for (byte b : fieldWrapper.getConteudo()) {
 				packedMsg[packedMsgPosition] = b;
@@ -191,14 +176,6 @@ public class ParserISO {
 
 			bitMaskHex += substringHex;
 		}
-		System.out.println(bitMaskHex);
-		System.out.println(bitMaskHex.length());
-
-//		for (char c : bitMaskHex.toCharArray()) {
-//			bitMask[bitMaskPosition] = charToByte(c);
-//
-//			bitMaskPosition++;
-//		}
 
 		int bitMaskHexLen = bitMaskHex.length();
 		for (int i = 0; i < bitMaskHexLen; i += 2) {
@@ -222,7 +199,6 @@ public class ParserISO {
 	// Cria um mapa (campo)-->(conteúdo[em bytes]) a partir de uma requestIso
 	// que chega em bytes[]
 	public void unpackIsoRequest(byte[] isoMsg, HashMap<Integer, FieldWrapper> map) {
-		System.out.println("Full request: " + bytesToHex(isoMsg));
 		// Obtém código MTI
 		map.put(0, new FieldWrapper(2, Arrays.copyOfRange(isoMsg, 0, 2)));
 
@@ -237,9 +213,6 @@ public class ParserISO {
 			elementList.remove(0);
 			lastPosition = 18;
 		}
-
-		System.out.println("[unpackIsoRequest]Campos ativos: " + elementList);
-
 		// Obtém o conteúdo dos campos ativos
 		byte[] conteudosISO = Arrays.copyOfRange(isoMsg, lastPosition, isoMsg.length);
 

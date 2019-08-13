@@ -1,6 +1,5 @@
 package parser;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,7 +33,6 @@ public class Parser {
 		}
 		mti = String.format("%04d", mti_int);
 
-//		System.out.println("New MTI: " + mti);
 		isoRequest.put(0, mti);
 
 		isoRequest.put(39, responseCode);
@@ -80,8 +78,6 @@ public class Parser {
 	public void packIsoMsg(String isoMsg) {
 		// Splitting formatted Iso message
 		isoMsg = isoMsg.replace('"', ' ').replace('{', ' ').replace('}', ' ').trim();
-
-		// System.out.println("isoMsg pack: " + isoMsg);
 
 		String splittedMsg[] = isoMsg.split(",");
 		List<String> splittedMsgList = Arrays.asList(splittedMsg);
@@ -133,19 +129,15 @@ public class Parser {
 					auxString = asciiToHex(auxString);
 				}
 
-//				System.out.println("Element: " + field);
-//				System.out.println("packDataElements maxNumberOfDigits: "  +dataElements.get(field).getMaxNumberOfDigits() + " Length: " + sizeOfField);
-
 				if (field != 125) {
 					packedMsg += String.format("%04d", sizeOfField);
 				} else {
 					packedMsg += String.format("%02d", sizeOfField);
 				}
-//				packedMsg += String.format("%0" + dataElements.get(field).getMaxNumberOfDigits() + "d", sizeOfField);
 				packedMsg += auxString;
 			} else {
 				// Fixed size fields
-				if (/* field == 42 || field == 37 */dataElements.get(field).getType() != "n") {
+				if (dataElements.get(field).getType() != "n") {
 					String aux = isoRequest.get(field);
 					aux = asciiToHex(aux);
 					packedMsg += aux;
@@ -169,9 +161,6 @@ public class Parser {
 		} else {
 			len = 64;
 		}
-
-//		System.out.println(keysList);
-//		System.out.println("Length: " + len + " bitMaskSize: " + bitMaskSize);
 
 		char initialMask[] = new char[len];
 		Arrays.fill(initialMask, '0');
@@ -232,8 +221,6 @@ public class Parser {
 		// Extracts the fields' values
 		String elements = isoMsg.substring(lastPosition);
 
-//		System.out.println("[unpackIsoMsg] Elements: " + elements);
-
 		// Save values in HashMap
 		getDataElements(elementList, elements);
 
@@ -258,18 +245,8 @@ public class Parser {
 
 		for (Integer element : elementList) {
 			DataElement dataElement = dataElements.get(element);
-//			System.out.println(dataElement);
 			if (dataElement.getVariable()) {
 				// Variable size
-
-//				System.out.println("[getDataElements] maxNumber: " +  dataElement.getMaxNumberOfDigits());
-//				System.out.println("[getDataElements] " + dataElement);
-//				System.out.println("[getDataElements] " + unformattedMsg);
-
-				// If the field size number doesn't have a fixed length
-//				len = Integer.parseInt(unformattedMsg.substring(0, dataElement.getMaxNumberOfDigits()))
-//						+ dataElement.getMaxNumberOfDigits();
-
 				if (dataElement.getCode() != 125) {
 					len = Integer.parseInt(unformattedMsg.substring(0, 4));
 					lenSize = 4;
@@ -291,13 +268,10 @@ public class Parser {
 					// Converts from hex to ASCII text
 					auxValue = hexToASCII(auxValue);
 				}
-
-//				System.out.println("[getDataElements] " + len + " " + auxValue);
 			} else {
 				// Fixed size
-//				System.out.println("[getDataElements] " + dataElement);
 				// (Size * 2) when the element is a hexadecimal value
-				if (/* dataElement.getCode() == 42 || dataElement.getCode() == 37 */dataElement.getType() != "n") {
+				if (dataElement.getType() != "n") {
 					// gets the field value
 					auxValue = unformattedMsg.substring(0, dataElement.getSize() * 2);
 					// cuts the field value from the original string
@@ -311,7 +285,6 @@ public class Parser {
 					unformattedMsg = unformattedMsg.substring(dataElement.getSize());
 				}
 			}
-//			 System.out.println("[getDataElements] auxValue: " + auxValue);
 			isoRequest.put(element, auxValue);
 		}
 	}
@@ -324,7 +297,6 @@ public class Parser {
 
 		for (int i = 4; i <= bitmap.length(); i += 4) {
 			String sub = bitmap.substring(i - 4, i);
-//			System.out.println("[decodeBitmap] " + sub);
 			Integer decimal = Integer.parseInt(sub, 16);
 
 			String aux = Integer.toBinaryString(decimal);
@@ -363,13 +335,9 @@ public class Parser {
 	// Converts a byte array into a Hexadecimal String
 	public String bytesToText(byte[] bytes) {
 		StringBuilder sb = new StringBuilder();
-//		System.out.println("[bytesToText] BEGIN");
 		for (byte b : bytes) {
-//			System.out.println(b);
 			sb.append(String.format("%02X", b));
 		}
-//		System.out.println("[bytesToText] END");
-		System.out.println("[bytesToText] " + sb.toString());
 		return sb.toString();
 	}
 
@@ -392,15 +360,12 @@ public class Parser {
 			}
 
 			String substring = hex.substring(i, end);
-			if (substring != null || substring != ""|| substring != "\n") {
+			if (substring != null || substring != "" || substring != "\n") {
 				int c = Integer.parseInt(substring, 16);
 				teste[pos] = (byte) c;
 			}
 			pos++;
 		}
-
-//		System.out.println("[textToBytes] ending  " + bytesToText(teste));
-
 		return teste;
 	}
 

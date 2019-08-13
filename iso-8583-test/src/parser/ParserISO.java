@@ -1,6 +1,5 @@
 package parser;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -96,35 +95,36 @@ public class ParserISO {
 			FieldWrapper fieldWrapper = responseMap.get(field);
 			if (dataElements.get(field).getVariable()) {
 				// Tamanho do campo em bytes
-				short sizeOfField = (short) fieldWrapper.getTam();
-				//TODO
+				int sizeOfField = fieldWrapper.getTam();
+				String sizeAsString = String.format("%04d", sizeOfField);
 				// Formatar o tamanho em hexadecimal
 				if (field == 125) {
-					byte b = (byte) (sizeOfField & 0x00ff);
+					byte b = charToByte(sizeAsString.charAt(2));
+					b = (byte) (b << 4);
+					b = (byte) (b | charToByte(sizeAsString.charAt(3)));
 					byte[] auxArray = {b};
 					packedMsg[packedMsgPosition] = b;
 					packedMsgPosition++;
 					System.out.println("125 size: " + bytesToHex(auxArray));
 				} else {
-					byte b = (byte) (sizeOfField >> 8);
 					byte[] auxArray = new byte[2];
+					
+					byte b = charToByte(sizeAsString.charAt(0));
+					b = (byte) (b << 4);
+					b = (byte) (b | charToByte(sizeAsString.charAt(1)));
 					auxArray[0] = b;
-					packedMsg[packedMsgPosition] = b;
-					packedMsgPosition++;
-					b = 0x00;
-					b = (byte) (sizeOfField & 0x00ff);
+					
+					b = charToByte(sizeAsString.charAt(2));
+					b = (byte) (b << 4);
+					b = (byte) (b | charToByte(sizeAsString.charAt(3)));
 					auxArray[1] = b;
-					packedMsg[packedMsgPosition] = b;
+					
+					packedMsg[packedMsgPosition] = auxArray[0];
+					packedMsgPosition++;
+					packedMsg[packedMsgPosition] = auxArray[1];
 					packedMsgPosition++;
 					System.out.println(field + " size: " + bytesToHex(auxArray));
 				}
-
-//				// copiar o tamanho do campo antes de concatenar o campo
-//				System.out.println("Campo " + field + " tamanho: " + bytesToHex(fieldSizeBytes));
-//				for (byte b : fieldSizeBytes) {
-//					packedMsg[packedMsgPosition] = b;
-//					packedMsgPosition++;
-//				}
 			}
 			System.out.println("Campo " + field + ": " + bytesToHex(fieldWrapper.getConteudo()));
 			// Concatena conteudo do campo

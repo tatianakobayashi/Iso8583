@@ -75,6 +75,7 @@ public class POS_ServerThread extends Thread {
 		// Empacota a response a nivel de socket
 		context.setRawIsoResponse(parser.packIsoResponse(context.getIsoResponseMap()));
 		// Envia response para cliente
+		System.out.println("RawIsoResponse " + parser.bytesToHex(context.getRawIsoResponse()));
 		try {
 			output.write(context.getRawIsoResponse());
 			output.flush();
